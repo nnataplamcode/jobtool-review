@@ -165,6 +165,11 @@ details>summary{cursor:pointer;color:var(--accent)}
 .sticky-actions{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:4;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.12)}
 .runs{display:flex;flex-direction:column;gap:4px;font-size:.85rem}
 .res-ok{color:var(--ok)} .res-man{color:var(--warn)} .res-bad{color:var(--bad)}
+.job.pickc{cursor:default}
+.linkish{border:0;background:none;padding:0;text-align:left;cursor:pointer;font-weight:600;color:var(--ink);overflow-wrap:anywhere}
+.linkish:hover{color:var(--accent)}
+.steph{display:flex;flex-direction:column;gap:2px}
+.jd{white-space:pre-wrap;font-size:.88rem;max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:12px;margin-top:8px;overflow-wrap:anywhere}
 </style>
 
 <header class="top"><div class="top-in">
@@ -1356,12 +1361,15 @@ Question: ${q}`,
   const H = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const core = JT.core;
   const S = { gh: JT.LS.get("jt.gh", null), view: "pending", jobId: null, queue: null, history: null, cv: null, profile: null, edits: JT.LS.get("jt.edits", {}),
-    runs: null, busy: {}, confirm: null, cfgText: null, kwText: null, kw: null, kwDirty: false };
+    runs: null, busy: {}, confirm: null, cfgText: null, kwText: null, kw: null, kwDirty: false, gen: JT.LS.get("jt.gen", {}), watch: null };
   const METHOD = { email: "Tự gửi email", greenhouse: "Tự nộp form Greenhouse", lever: "Tự nộp form Lever", ashby: "Tự nộp form Ashby", manual: "Bạn nộp tay" };
   const STATUS = { approved: "Đã duyệt", applied: "Đã nộp", interview: "Phỏng vấn", rejected: "Bị từ chối", offer: "Offer", skipped: "Bỏ qua" };
   const RES = { submitted: ["res-ok", "Đã nộp"], needs_manual: ["res-man", "Cần nộp tay"], failed: ["res-bad", "Lỗi"], skipped: ["", "Bỏ qua"], deferred: ["res-man", "Để ngày mai"] };
   function toast(m, ms = 3000) { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), ms); }
   const saveEdits = () => JT.LS.set("jt.edits", S.edits);
+  const saveGen = () => JT.LS.set("jt.gen", S.gen);
+  const picks = () => (S.queue && S.queue.picks) || [];
+  const isGen = (j) => j.stage === "generating" || !!S.gen[j.id];
 
   // ============================================================ GitHub API
   const gh = {
@@ -1397,24 +1405,63 @@ Question: ${q}`,
     S.busy.load = true; render();
     try {
       const [queue, history, prof] = await Promise.all([gh.json("state/queue.json"), gh.json("state/history.json"), gh.json("profile.json")]);
-      S.queue = queue || { jobs: [] }; S.history = history || { items: [], counts: {} }; S.profile = prof || {};
+      S.queue = queue || { jobs: [] }; S.queue.picks = S.queue.picks || []; S.history = history || { items: [], counts: {} }; S.profile = prof || {};
       S.cv = await gh.json(S.queue.cv || "data/cv.json");
       S.runs = await gh.runs().catch(() => null);
+      pruneGen();
       S.err = null;
     } catch (e) { S.err = e.message; }
     S.busy.load = false; render();
+    if (!S.err && runActive()) watchRuns();
+  }
+  // "Tạo hồ sơ" requests stay marked until the job leaves step 1 or a GitHub run that started after the request has finished
+  function pruneGen() {
+    const active = runActive();
+    for (const [id, ts] of Object.entries(S.gen)) {
+      const p = picks().find((x) => x.id === id);
+      const finished = !active && (S.runs || []).some((r) => r.status === "completed" && new Date(r.created_at).getTime() >= ts - 10000);
+      if (!p || finished || Date.now() - ts > 45 * 60000) delete S.gen[id];
+    }
+    saveGen();
+  }
+  const runActive = () => (S.runs || []).some((r) => r.status !== "completed");
+  // Poll GitHub while a run is queued or running; refresh the data once it finishes.
+  async function watchRuns() {
+    if (S.watch) { S.watch.until = Math.max(S.watch.until, Date.now() + 120000); return; }
+    S.watch = { seen: false, until: Date.now() + 120000 };
+    paintRuns();
+    while (S.watch && S.gh) {
+      await new Promise((r) => setTimeout(r, 8000));
+      if (!S.watch) return;
+      const runs = await gh.runs().catch(() => null);
+      if (runs) S.runs = runs;
+      if (runActive()) { S.watch.seen = true; S.watch.until = Date.now() + 3600000; paintRuns(); continue; }
+      if (!S.watch.seen && Date.now() < S.watch.until) { paintRuns(); continue; }
+      const seen = S.watch.seen;
+      S.watch = null;
+      if (!seen) { paintRuns(); return; }
+      if (S.view === "job") { paintRuns(); toast("GitHub đã chạy xong. Bấm Làm mới ở danh sách để cập nhật.", 6000); return; }
+      await load();
+      toast("GitHub đã chạy xong, đã cập nhật.", 4000);
+      return;
+    }
+  }
+  function paintRuns() {
+    const el = document.getElementById("runs");
+    if (el) el.outerHTML = runsHtml() || `<div id="runs"></div>`;
+    else if (S.view !== "job" && S.view !== "pick" && S.view !== "settings") render();
   }
 
   // ============================================================ render
   function render() {
-    document.querySelectorAll("#tabs .tab").forEach((b) => b.setAttribute("aria-current", b.dataset.view === (S.view === "job" ? "pending" : S.view) ? "page" : "false"));
+    document.querySelectorAll("#tabs .tab").forEach((b) => b.setAttribute("aria-current", b.dataset.view === (S.view === "job" || S.view === "pick" ? "pending" : S.view) ? "page" : "false"));
     $("#tabs").hidden = !S.gh;
-    const n = S.queue ? S.queue.jobs.length : 0;
+    const n = S.queue ? S.queue.jobs.length + picks().length : 0;
     $("#status").innerHTML = S.gh ? `<span class="chip"><span class="dot on"></span>${H(S.gh.owner)}/${H(S.gh.repo)}</span>${S.queue ? `<span class="chip">${n} chờ duyệt</span>` : ""}` : "";
     if (!S.gh) { $("#main").innerHTML = viewConnect(); return; }
     if (!S.queue && !S.err) { $("#main").innerHTML = `<div class="busy"><div class="spin"></div>Đang đọc dữ liệu từ GitHub…</div>`; return; }
     if (S.err) { $("#main").innerHTML = `<div class="stack"><div class="note bad">${H(S.err)}</div><div class="row"><button class="btn" data-act="reload">Thử lại</button><button class="btn ghost" data-act="disconnect">Đổi repo / token</button></div></div>`; return; }
-    $("#main").innerHTML = ({ pending: viewPending, job: viewJob, history: viewHistory, settings: viewSettings }[S.view] || viewPending)();
+    $("#main").innerHTML = ({ pending: viewPending, job: viewJob, pick: viewPick, history: viewHistory, settings: viewSettings }[S.view] || viewPending)();
   }
 
   function viewConnect() {
@@ -1435,24 +1482,76 @@ Question: ${q}`,
   };
   const pill = (v) => (v ? `<span class="pill ${v}">${{ ok: "✓ Phù hợp", verify: "? Cần xác minh", reject: "✕ Loại" }[v]}</span>` : "");
 
+  function aiNote() {
+    const a = S.queue.ai;
+    if (!a) return "";
+    if ((a.problems || []).length) return `<div class="note warn small"><b>AI gặp lỗi hôm nay:</b> ${a.problems.map(H).join("; ")}. ${a.mode === "heuristic"
+      ? "Tool đang chạy chế độ cơ bản: CV sắp xếp lại từ câu gốc, cover letter theo mẫu, câu hỏi form để bạn tự trả lời." : `Đang dùng ${H(a.mode)}.`}</div>`;
+    if (!a.configured) return `<div class="note small">Chưa có AI (chưa đặt secret GEMINI_API_KEY): tool chạy chế độ cơ bản.</div>`;
+    return "";
+  }
   function viewPending() {
-    const jobs = S.queue.jobs;
-    const runs = runsHtml();
-    if (!jobs.length) return `<div class="stack"><div class="empty"><b>Không có job nào chờ duyệt</b><span>GitHub tự quét mỗi sáng lúc khoảng 06:40 và gửi email khi có job mới.</span>
-      <button class="btn" data-act="dispatch" data-wf="daily.yml" ${S.busy.dispatch ? "disabled" : ""}>Quét ngay</button></div>${runs}</div>`;
-    return `<div class="stack"><div class="row" style="justify-content:space-between"><h2>Chờ duyệt (${jobs.length})</h2><div class="row"><button class="btn ghost" data-act="reload">Làm mới</button><button class="btn" data-act="dispatch" data-wf="daily.yml" ${S.busy.dispatch ? "disabled" : ""}>Quét ngay</button></div></div>
+    const jobs = S.queue.jobs, ps = picks();
+    const runs = runsHtml() || `<div id="runs"></div>`;
+    const scan = `<button class="btn" data-act="dispatch" data-wf="daily.yml" ${S.busy.dispatch ? "disabled" : ""}>Quét ngay</button>`;
+    if (!jobs.length && !ps.length) return `<div class="stack">${aiNote()}<div class="empty"><b>Không có job nào chờ duyệt</b><span>GitHub tự quét mỗi sáng lúc khoảng 06:40 và gửi email khi có job phù hợp.</span>
+      ${scan}</div>${runs}</div>`;
+    const review = jobs.length ? `<div class="steph"><h2>Bước 2 · Hồ sơ chờ duyệt (${jobs.length})</h2><span class="muted small">Kiểm tra CV, cover letter, câu trả lời form rồi bấm Duyệt &amp; nộp.</span></div>
       <div class="jobs">${jobs.map((j) => {
         const sc = j.score;
         return `<button class="job" data-act="open" data-id="${H(j.id)}"><div class="score ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc ?? "–"}</div>
           <div class="job-main"><div class="job-title">${H(j.title)} <span class="muted" style="font-weight:400">· ${H(j.company)}</span></div>
           <div class="job-meta">${pill(j.tz && j.tz.verdict)}<span class="mono small">${H(j.tz ? j.tz.label : "")}</span><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span>
           ${S.edits[j.id] ? `<span class="pill st">Có chỉnh sửa chưa gửi</span>` : ""}</div>${ribbon(j.tz)}</div></button>`;
-      }).join("")}</div>${runs}</div>`;
+      }).join("")}</div>` : "";
+    const pick = ps.length ? `<div class="steph"><h2>Bước 1 · Chọn job để tạo hồ sơ (${ps.length})</h2><span class="muted small">Job đã qua bộ lọc. Bấm Tạo hồ sơ với job bạn muốn nộp: GitHub viết CV, cover letter và chuẩn bị form trong vài phút, rồi job chuyển sang bước 2.</span></div>
+      <div class="jobs">${ps.map(pickCard).join("")}</div>` : "";
+    return `<div class="stack"><div class="row" style="justify-content:space-between"><h2>Chờ duyệt</h2><div class="row"><button class="btn ghost" data-act="reload">Làm mới</button>${scan}</div></div>
+      ${aiNote()}${review}${pick}${runs}</div>`;
+  }
+  function pickCard(j) {
+    const sc = j.score, gen = isGen(j), busy = S.busy["gen" + j.id];
+    return `<div class="job pickc"><div class="score ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc ?? "–"}</div>
+      <div class="job-main"><button class="linkish job-title" data-act="open-pick" data-id="${H(j.id)}">${H(j.title)} <span class="muted" style="font-weight:400">· ${H(j.company)}</span></button>
+      <div class="job-meta">${pill(j.tz && j.tz.verdict)}<span class="mono small">${H(j.tz ? j.tz.label : "")}</span><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span></div>
+      ${ribbon(j.tz)}${j.note && !gen ? `<div class="warn-line">${H(j.note)}</div>` : ""}
+      <div class="row" style="gap:8px">${gen ? `<span class="busy small"><span class="spin"></span>Đang tạo hồ sơ, khoảng 1–5 phút…</span>`
+        : `<button class="btn primary" data-act="gen" data-id="${H(j.id)}" ${busy ? "disabled" : ""}>Tạo hồ sơ</button><button class="btn" data-act="skip-pick" data-id="${H(j.id)}" ${busy ? "disabled" : ""}>Bỏ qua</button>`}
+        <button class="btn ghost" data-act="open-pick" data-id="${H(j.id)}">Xem chi tiết</button></div></div></div>`;
   }
   function runsHtml() {
     if (!S.runs) return "";
-    const st = (r) => (r.status !== "completed" ? "đang chạy" : r.conclusion === "success" ? "xong" : r.conclusion === "failure" ? "lỗi" : r.conclusion);
-    return `<section class="panel"><h3>Lần chạy gần đây trên GitHub</h3><div class="runs">${S.runs.map((r) => `<div><span class="mono">${H(new Date(r.created_at).toLocaleString("vi-VN"))}</span> · ${H(r.name)} · <b>${H(st(r))}</b> · <a href="${H(r.html_url)}" target="_blank" rel="noopener">xem log ↗</a></div>`).join("")}</div></section>`;
+    const st = (r) => (r.status === "queued" || r.status === "waiting" || r.status === "pending" ? "đang chờ" : r.status !== "completed" ? "đang chạy" : r.conclusion === "success" ? "xong" : r.conclusion === "failure" ? "lỗi" : r.conclusion);
+    const name = (n) => ({ daily: "quét job", apply: "tạo hồ sơ / nộp đơn" }[n] || n);
+    return `<section class="panel" id="runs"><div class="row" style="justify-content:space-between;margin-bottom:10px"><h3 style="margin:0">Lần chạy gần đây trên GitHub</h3>
+      ${S.watch ? `<span class="busy small"><span class="spin"></span>Tự cập nhật đến khi chạy xong</span>` : `<button class="btn ghost small" data-act="watch">Cập nhật</button>`}</div>
+      <div class="runs">${S.runs.map((r) => `<div><span class="mono">${H(new Date(r.created_at).toLocaleString("vi-VN"))}</span> · ${H(name(r.name))} · <b>${H(st(r))}</b> · <a href="${H(r.html_url)}" target="_blank" rel="noopener">xem log ↗</a></div>`).join("")}</div></section>`;
+  }
+
+  // ------------------------------------------------------------ step 1 detail
+  function viewPick() {
+    const j = picks().find((x) => x.id === S.jobId);
+    if (!j) { S.view = "pending"; return viewPending(); }
+    const tz = j.tz || {}, sc = j.score_detail || {}, gen = isGen(j), busy = S.busy["gen" + j.id];
+    const list = (title, xs, cls = "") => ((xs || []).length ? `<div class="small"><b>${title}</b><ul class="plain ${cls}">${xs.map((x) => `<li>${H(x)}</li>`).join("")}</ul></div>` : "");
+    return `<div class="stack">
+      <div><button class="btn ghost" data-act="back">← Danh sách</button></div>
+      <section class="panel stack"><div class="dhead"><div class="score ${j.score >= 70 ? "hi" : ""}">${j.score ?? "–"}</div><div class="t"><h2>${H(j.title)}</h2>
+        <div class="muted">${H(j.company)} · <a href="${H(j.url)}" target="_blank" rel="noopener">Tin gốc ↗</a>${j.salary ? ` · ${H(j.salary)} ${H(j.currency || "")}` : ""}</div></div><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span></div>
+        ${ribbon(tz)}<div class="row">${pill(tz.verdict)}<b class="mono small">${H(tz.label)}</b></div><div class="small">${H(tz.reason)}</div>
+        ${(j.location || []).length ? `<div class="small"><b>Nơi tuyển:</b> ${H(j.location.join(", "))}</div>` : ""}
+        <p class="small" style="margin:0"><b>Độ phù hợp:</b> ${H(sc.reasoning)}</p>
+        ${list("Khớp với CV", sc.matched)}${list("Chuyển đổi được", sc.transferable)}${list("JD yêu cầu nhưng CV chưa có", sc.missing)}
+        ${(sc.red_flags || []).length ? `<div class="note warn small">${sc.red_flags.map(H).join(" · ")}</div>` : ""}
+        ${j.note && !gen ? `<div class="note bad small">${H(j.note)}</div>` : ""}
+      </section>
+      <section class="panel"><details open><summary><b>Mô tả công việc</b></summary><div class="jd">${H(j.description)}</div></details></section>
+      <div class="sticky-actions">
+        <span class="small muted">${gen ? "GitHub đang tạo hồ sơ. Trang tự cập nhật khi xong." : "Tạo hồ sơ: GitHub viết CV, cover letter và chuẩn bị form/thư. Bạn duyệt lại ở bước 2 trước khi nộp."}</span>
+        <div class="row" style="margin-left:auto">${gen ? `<span class="busy small"><span class="spin"></span>Đang tạo hồ sơ…</span>`
+          : `<button class="btn" data-act="skip-pick" data-id="${H(j.id)}" ${busy ? "disabled" : ""}>Bỏ qua</button><button class="btn primary" data-act="gen" data-id="${H(j.id)}" ${busy ? "disabled" : ""}>Tạo hồ sơ</button>`}</div>
+      </div>
+    </div>`;
   }
 
   // ------------------------------------------------------------ job detail
@@ -1489,6 +1588,7 @@ Question: ${q}`,
         ${(tz.questions || []).length ? `<details><summary class="small">Câu nên hỏi nhà tuyển dụng về giờ làm</summary><ul class="plain small">${tz.questions.map((q) => `<li>${H(q)}</li>`).join("")}</ul></details>` : ""}
         <p class="small" style="margin:0"><b>Độ phù hợp:</b> ${H(sc.reasoning)}</p>
         ${(sc.red_flags || []).length ? `<div class="note warn small">${sc.red_flags.map(H).join(" · ")}</div>` : ""}
+        ${j.cv.method === "heuristic" ? `<div class="note warn small">Hồ sơ này tạo ở chế độ cơ bản (AI không chạy được): CV chỉ sắp xếp lại câu gốc, cover letter viết theo mẫu. Đọc kỹ và sửa trước khi duyệt.</div>` : ""}
         ${j.apply.last_reason ? `<div class="note bad small"><b>Lần duyệt trước chưa nộp được:</b> ${H(j.apply.last_reason)}. Trả lời các câu đó bên dưới rồi duyệt lại.</div>` : ""}
         ${j.apply.method === "manual" ? `<div class="note small">Job này không nộp tự động được${j.apply.reason ? ` (${H(j.apply.reason)})` : ""}. Khi bạn duyệt, tool vẫn lưu hồ sơ và gửi bạn link + file để nộp tay.</div>` : ""}
       </section>
@@ -1616,9 +1716,9 @@ Question: ${q}`,
 
   // ============================================================ actions
   function decision(j, action) {
-    const e = ed(j);
     const d = { id: j.id, action, decided_at: new Date().toISOString() };
     if (action === "approve") {
+      const e = ed(j);
       if (e.touched.cover) d.cover = e.cover;
       if (e.touched.final) d.final = e.final;
       if (e.email) d.email = e.email;
@@ -1626,15 +1726,27 @@ Question: ${q}`,
     }
     return d;
   }
+  async function generate(p) {
+    S.busy["gen" + p.id] = true; render();
+    try {
+      const ts = Date.now();
+      await gh.put(`state/decisions/${p.id}-gen-${ts}.json`, JSON.stringify({ id: p.id, action: "generate", decided_at: new Date(ts).toISOString() }, null, 1), `Tạo hồ sơ: ${p.title} @ ${p.company}`);
+      S.gen[p.id] = ts; saveGen();
+      toast("Đã gửi. GitHub đang tạo hồ sơ (khoảng 1–5 phút), trang tự cập nhật khi xong.", 5000);
+      watchRuns();
+    } catch (e) { toast(e.message, 6000); }
+    delete S.busy["gen" + p.id]; render();
+  }
   async function decide(j, action) {
     S.busy.decide = true; render();
     try {
       await gh.put(`state/decisions/${j.id}.json`, JSON.stringify(decision(j, action), null, 1), `${action === "approve" ? "Duyệt" : "Bỏ qua"}: ${j.title} @ ${j.company}`);
       S.queue.jobs = S.queue.jobs.filter((x) => x.id !== j.id);
+      S.queue.picks = picks().filter((x) => x.id !== j.id);
       delete S.edits[j.id]; saveEdits();
       S.view = "pending"; S.confirm = null;
       toast(action === "approve" ? "Đã duyệt. GitHub đang xử lý, bạn sẽ nhận email kết quả." : "Đã bỏ qua", 4500);
-      setTimeout(async () => { S.runs = await gh.runs().catch(() => S.runs); render(); }, 6000);
+      if (action === "approve") watchRuns();
     } catch (e) { toast(e.message, 6000); }
     S.busy.decide = false; render();
   }
@@ -1643,6 +1755,7 @@ Question: ${q}`,
     if (!t) return;
     if (t.dataset.view) { S.view = t.dataset.view; S.confirm = null; render(); window.scrollTo(0, 0); return; }
     const a = t.dataset.act, j = S.queue && S.queue.jobs.find((x) => x.id === (t.dataset.id || S.jobId));
+    const p = S.queue && picks().find((x) => x.id === (t.dataset.id || S.jobId));
     if (a === "connect") {
       const g = { owner: $("#g-owner").value.trim(), repo: $("#g-repo").value.trim(), branch: $("#g-branch").value.trim() || "main", token: $("#g-token").value.trim() };
       if (!g.owner || !g.repo || !g.token) return toast("Điền đủ owner, repo và token");
@@ -1650,6 +1763,10 @@ Question: ${q}`,
     } else if (a === "disconnect") { S.gh = null; JT.LS.set("jt.gh", null); S.queue = null; render(); }
     else if (a === "reload") { await load(); }
     else if (a === "open") { S.view = "job"; S.jobId = t.dataset.id; S.confirm = null; render(); window.scrollTo(0, 0); }
+    else if (a === "open-pick") { S.view = "pick"; S.jobId = t.dataset.id; render(); window.scrollTo(0, 0); }
+    else if (a === "gen" && p) { await generate(p); }
+    else if (a === "skip-pick" && p) { await decide(p, "skip"); }
+    else if (a === "watch") { watchRuns(); }
     else if (a === "back") { S.view = "pending"; render(); }
     else if (a === "cv-edit") { S.busy.cvEdit = S.busy.cvEdit === j.id ? null : j.id; render(); }
     else if (a === "del-sum" && j) { const e = ed(j); e.final.summary.splice(+t.dataset.i, 1); e.touched.final = true; saveEdits(); render(); }
@@ -1662,7 +1779,7 @@ Question: ${q}`,
       try { const p = t.dataset.path; toast("Đang tải…"); const b = await gh.blob(p); await JT.download(p.split("/").pop(), b); } catch (e) { toast(e.message, 5000); }
     } else if (a === "dispatch") {
       S.busy.dispatch = true; render();
-      try { await gh.dispatch(t.dataset.wf); toast("Đã yêu cầu GitHub quét ngay. Khoảng 5–15 phút sau bấm Làm mới.", 5000); setTimeout(async () => { S.runs = await gh.runs().catch(() => S.runs); render(); }, 5000); }
+      try { await gh.dispatch(t.dataset.wf); toast("Đã yêu cầu GitHub quét ngay. Trang tự cập nhật khi quét xong (khoảng 2–15 phút).", 5000); watchRuns(); }
       catch (e) { toast(e.message, 6000); }
       S.busy.dispatch = false; render();
     } else if (a === "setstatus") {
@@ -1692,7 +1809,7 @@ Question: ${q}`,
           const txt = K.dump(S.kw);
           await gh.put("keywords.yaml", txt, "Sửa từ khoá");
           S.kwText = txt; S.kwDirty = false;
-          if (t.dataset.scan) { await gh.dispatch("daily.yml"); toast("Đã lưu và yêu cầu quét. Khoảng 5–15 phút sau bấm Làm mới.", 5000); }
+          if (t.dataset.scan) { await gh.dispatch("daily.yml"); toast("Đã lưu và yêu cầu quét. Trang tự cập nhật khi quét xong.", 5000); watchRuns(); }
           else toast("Đã lưu. AI đề xuất và tìm theo từ khoá mới ở lần quét tới.", 4500);
         } catch (e) { toast(e.message, 6000); }
         S.busy.kw = false; render(); return;
