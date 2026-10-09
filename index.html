@@ -1412,7 +1412,7 @@ Question: ${q}`,
     const n = S.queue ? S.queue.jobs.length : 0;
     $("#status").innerHTML = S.gh ? `<span class="chip"><span class="dot on"></span>${H(S.gh.owner)}/${H(S.gh.repo)}</span>${S.queue ? `<span class="chip">${n} chờ duyệt</span>` : ""}` : "";
     if (!S.gh) { $("#main").innerHTML = viewConnect(); return; }
-    if (S.busy.load && !S.queue) { $("#main").innerHTML = `<div class="busy"><div class="spin"></div>Đang đọc dữ liệu từ GitHub…</div>`; return; }
+    if (!S.queue && !S.err) { $("#main").innerHTML = `<div class="busy"><div class="spin"></div>Đang đọc dữ liệu từ GitHub…</div>`; return; }
     if (S.err) { $("#main").innerHTML = `<div class="stack"><div class="note bad">${H(S.err)}</div><div class="row"><button class="btn" data-act="reload">Thử lại</button><button class="btn ghost" data-act="disconnect">Đổi repo / token</button></div></div>`; return; }
     $("#main").innerHTML = ({ pending: viewPending, job: viewJob, history: viewHistory, settings: viewSettings }[S.view] || viewPending)();
   }
