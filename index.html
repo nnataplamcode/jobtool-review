@@ -1,0 +1,1637 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex"><style>[hidden]{display:none!important}img{max-width:100%}</style></head><body>
+<title>Duyệt Job UTC+7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one working column (max 1080px) under a sticky tab bar; job detail replaces the list.
+   Signature: a 24-hour ICT ribbon with the 00:00–07:00 night band, on every job. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --sunk:#e9edf1; --ink:#14202b; --muted:#5b6876; --line:#d7dee5;
+  --accent:#16627d; --accent-ink:#ffffff; --accent-soft:#dcedf3;
+  --night:#2a3550; --night-soft:#c9d0de;
+  --ok:#1d7a4c; --ok-soft:#dcf1e5; --warn:#a86512; --warn-soft:#fbecd6; --bad:#b4322a; --bad-soft:#f8e1de;
+  --font:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f151b; --surface:#161e26; --sunk:#1d2731; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3642;
+  --accent:#5fb4d2; --accent-ink:#06202a; --accent-soft:#16323e; --night:#8fa0c4; --night-soft:#2b3550;
+  --ok:#5cc58e; --ok-soft:#173527; --warn:#e3a54f; --warn-soft:#3a2a12; --bad:#ef8a80; --bad-soft:#3b1d1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151b; --surface:#161e26; --sunk:#1d2731; --ink:#e4eaf0; --muted:#97a5b3; --line:#2a3642;
+  --accent:#5fb4d2; --accent-ink:#06202a; --accent-soft:#16323e; --night:#8fa0c4; --night-soft:#2b3550;
+  --ok:#5cc58e; --ok-soft:#173527; --warn:#e3a54f; --warn-soft:#3a2a12; --bad:#ef8a80; --bad-soft:#3b1d1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--font);margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+a{color:var(--accent)}
+h1,h2,h3{line-height:1.25;text-wrap:balance;margin:0}
+h2{font-size:1.25rem;font-weight:700}
+h3{font-size:1rem;font-weight:600}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:16px;padding-block:18px 64px}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-in{max-width:1080px;margin:0 auto;padding-inline:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding-block:10px}
+.brand{display:flex;align-items:baseline;gap:8px;font-weight:700;letter-spacing:-.01em}
+.brand .mono{font-size:.8rem;color:var(--accent);font-weight:600}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{border:0;background:none;padding:7px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:500}
+.tab[aria-current="page"]{background:var(--accent-soft);color:var(--ink)}
+.tab:hover{color:var(--ink)}
+.status{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.78rem;color:var(--muted);background:var(--surface)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--ok)}
+
+/* generic blocks */
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.panel>h3{margin-bottom:10px}
+.lead{max-width:62ch}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{border-color:transparent;background:none;color:var(--accent);padding-inline:6px}
+.btn.danger{color:var(--bad)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn:focus-visible,.tab:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);min-width:0}
+input[type=text],input[type=url],input[type=number],input[type=password],textarea,select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;color:var(--ink)}
+textarea{min-height:120px;resize:vertical;line-height:1.5}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px}
+.note{border-left:3px solid var(--accent);background:var(--accent-soft);padding:10px 14px;border-radius:0 8px 8px 0;font-size:.9rem}
+.note.warn{border-color:var(--warn);background:var(--warn-soft)}
+.note.bad{border-color:var(--bad);background:var(--bad-soft)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;z-index:20;max-width:calc(100% - 32px);font-size:.9rem}
+.busy{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+/* verdict pills */
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:.78rem;font-weight:600;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.verify{background:var(--warn-soft);color:var(--warn)}
+.pill.reject{background:var(--bad-soft);color:var(--bad)}
+.pill.st{background:var(--sunk);color:var(--muted);font-weight:500}
+
+/* job cards */
+.jobs{display:flex;flex-direction:column;gap:10px}
+.job{display:grid;grid-template-columns:56px 1fr;gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;cursor:pointer;text-align:left;width:100%}
+.job:hover{border-color:var(--accent)}
+.job.filtered{opacity:.78}
+.score{width:56px;height:56px;border-radius:12px;display:grid;place-items:center;background:var(--sunk);font-family:var(--mono);font-weight:600;font-size:1.15rem}
+.score.hi{background:var(--ok-soft);color:var(--ok)}
+.score.mid{background:var(--warn-soft);color:var(--warn)}
+.job-main{min-width:0;display:flex;flex-direction:column;gap:6px}
+.job-title{font-weight:600;overflow-wrap:anywhere}
+.job-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+
+/* 24h ICT ribbon */
+.ribbon{display:block;width:100%;height:30px}
+.ribbon.big{height:46px}
+.rb-night{fill:var(--night-soft)}
+.rb-track{fill:var(--sunk)}
+.rb-win{opacity:.9}
+.rb-win.ok{fill:var(--ok)} .rb-win.verify{fill:var(--warn)} .rb-win.reject{fill:var(--bad)}
+.rb-tick{stroke:var(--line)} .rb-lab{fill:var(--muted);font:10px var(--mono)}
+.rb-nlab{fill:var(--night);font:600 9px var(--mono)}
+
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 12px;cursor:pointer;font-size:.85rem}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* links grid */
+.sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:8px}
+.site{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-decoration:none;color:var(--ink);background:var(--surface)}
+.site:hover{border-color:var(--accent)}
+.site b{font-weight:600}
+.kw{display:flex;gap:6px;flex-wrap:wrap}
+.kw button{border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--surface);cursor:pointer;font-size:.85rem}
+.kw button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+
+/* detail */
+.dhead{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+.dhead .t{flex:1;min-width:0}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 14px;font-size:.92rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+ul.plain{margin:0;padding-left:18px}
+ul.plain li{margin:3px 0}
+.diff{display:flex;flex-direction:column;gap:10px}
+.dl{border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.dl .src{font-size:.82rem;color:var(--muted);margin-top:4px}
+.dl.drop{border-color:var(--bad);background:var(--bad-soft)}
+.tag{font:600 .7rem var(--mono);letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.cvprev{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:22px;font-size:.86rem;line-height:1.45;overflow-x:auto}
+.cvprev h4{font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3px;margin:14px 0 6px}
+.cvprev .ent{display:flex;justify-content:space-between;gap:12px;font-weight:600;margin-top:6px;flex-wrap:wrap}
+.cvprev ul{margin:2px 0 4px;padding-left:18px}
+.checks{display:flex;flex-direction:column;gap:4px;font-size:.88rem}
+.checks .okc{color:var(--ok)} .checks .badc{color:var(--bad)}
+.copyrow{display:flex;gap:6px;flex-wrap:wrap}
+.copyrow button{border:1px dashed var(--line);background:var(--surface);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.85rem}
+
+/* tracking */
+.funnel{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:8px}
+.fn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.fn b{display:block;font:600 1.5rem var(--mono)}
+.fn span{font-size:.8rem;color:var(--muted)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:.9rem}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;color:var(--muted);font-weight:600}
+tr:last-child td{border-bottom:0}
+details>summary{cursor:pointer;color:var(--accent)}
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+</style>
+<style>
+.method{display:inline-flex;align-items:center;gap:5px;border-radius:6px;padding:2px 8px;font-size:.78rem;font-weight:600;background:var(--accent-soft);color:var(--accent)}
+.method.manual{background:var(--sunk);color:var(--muted)}
+.qrow{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.qrow.need{border-color:var(--bad);background:var(--bad-soft)}
+.qrow .lab{font-weight:500;font-size:.92rem}
+.req{color:var(--bad);font-weight:700}
+.bul{display:flex;gap:8px;align-items:flex-start}
+.bul textarea{min-height:58px}
+.warn-line{font-size:.8rem;color:var(--bad)}
+.sticky-actions{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));z-index:4;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+.runs{display:flex;flex-direction:column;gap:4px;font-size:.85rem}
+.res-ok{color:var(--ok)} .res-man{color:var(--warn)} .res-bad{color:var(--bad)}
+</style>
+
+<header class="top"><div class="top-in">
+  <div class="brand">Duyệt Job <span class="mono">UTC+7</span></div>
+  <nav class="tabs" id="tabs" aria-label="Màn hình">
+    <button class="tab" data-view="pending">Chờ duyệt</button>
+    <button class="tab" data-view="history">Lịch sử</button>
+    <button class="tab" data-view="settings">Cài đặt</button>
+  </nav>
+  <div class="status" id="status"></div>
+</div></header>
+<main class="wrap" id="main"><div class="busy"><div class="spin"></div>Đang mở…</div></main>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+/* Traceability check — port of trace.py. Every tailored item must be backed by the master CV. */
+(function (JT) {
+  "use strict";
+  const STOP = new Set(`a an the and or of to in on for with by from at as into across through via that which who whom whose this these those
+    is are was were be been being it its their our my your his her they we i you he she them us me
+    including include includes such other more most new key regular regularly high highly strong well also both each per
+    while within using use used ensure ensuring support supporting related relevant various multiple`.split(/\s+/).filter(Boolean));
+  const CLAIMS = [
+    /remote(?:ly)? (?:team|teams|work(?:ed|ing)?|environment|setting|collaboration)/i,
+    /work(?:ed|ing)? remotely/i,
+    /distributed team/i,
+    /(?:international|global|overseas|cross[- ]border|multinational) (?:team|teams|clients?|customers?|stakeholders?|partners?|markets?)/i,
+    /across (?:time ?zones|countries|continents)/i,
+    /(?:led|lead|managed|manage|supervised|mentored) (?:a |the )?(?:team|teams|staff|direct reports|analysts|engineers)/i,
+    /team lead(?:er)?/i,
+    /people manag/i,
+    /\bcertified\b|\bcertification\b/i,
+    /\bfluent\b|\bnative\b/i,
+  ];
+  const TOOLS = ["excel", "word", "powerpoint", "sql", "python", "tableau", "power bi", "looker", "google analytics", "facebook ads", "ads manager", "canva", "jira",
+    "confluence", "trello", "asana", "notion", "salesforce", "hubspot", "figma", "photoshop", "sap", "quickbooks", "zendesk", "intercom", "git", "javascript", "typescript",
+    "java", "aws", "gcp", "azure", "docker", "google sheets", "airtable", "zapier", "bigquery", "snowflake", "dbt", "looker studio", "semrush", "ahrefs", "wordpress",
+    "shopify", "mailchimp", "spss", "stata", "matlab", "r studio", "gainsight", "totango", "marketo", "pardot", "netsuite", "oracle", "workday", "servicenow"];
+  const HARD = /\b(?:[A-Z]{2,6}s?|[A-Z][a-z]+(?:[A-Z][a-z]+)+)\b/g;
+  const NUM = /\$\s?\d[\d,]*(?:\.\d+)?[kKmM]?|\d+(?:[.,]\d+)?\s?%|\d+\+|\b\d+(?:[.,]\d+)?\b/g;
+  const WORDNUM = { one: "1", two: "2", three: "3", four: "4", five: "5", six: "6", seven: "7", eight: "8", nine: "9", ten: "10", twelve: "12" };
+  const SAFE = new Set(["I", "A", "CV", "B2B", "B2C", "KPI", "KPIs"]);
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const normText = (s) => String(s || "").toLowerCase().replace(/&amp;|&#0?38;/g, "&").replace(/[^a-z0-9&+ ]+/g, " ").replace(/\s+/g, " ").trim();
+  function stem(w) {
+    w = w.toLowerCase();
+    for (const suf of ["ations", "ation", "ments", "ment", "ings", "ing", "ers", "ies", "ied", "ed", "es", "er", "ly", "s"]) {
+      if (w.length > suf.length + 3 && w.endsWith(suf)) { w = w.slice(0, -suf.length); break; }
+    }
+    return w.slice(0, 7);
+  }
+  const contentWords = (t) => normText(t).replace(/&/g, " ").split(" ").filter((w) => w.length > 2 && !STOP.has(w) && !/^\d+$/.test(w));
+  function numbers(text) {
+    const out = new Set();
+    for (const m of String(text).matchAll(NUM)) {
+      const v = m[0].replace(/[\s$,+]/g, "").toLowerCase().replace(/%$/, "");
+      if (v) out.add(v);
+    }
+    for (const [w, d] of Object.entries(WORDNUM)) if (new RegExp(`\\b${w}\\b`, "i").test(text)) out.add(d);
+    return out;
+  }
+  const present = (term, text) => {
+    const t = String(term).trim().toLowerCase();
+    return !t || new RegExp(`(?<![a-z0-9])${esc(t)}(?![a-z0-9])`).test(String(text).toLowerCase());
+  };
+  const bigrams = (ws) => ws.slice(1).map((w, i) => stem(ws[i]) + "|" + stem(w));
+
+  function buildContext(idx, jdText, missing, years) {
+    const cvText = Object.values(idx).map((v) => v.text).join("\n");
+    const jdTerms = new Set([...String(jdText || "").matchAll(HARD)].map((m) => m[0]).filter((x) => !SAFE.has(x)));
+    const jl = String(jdText || "").toLowerCase();
+    for (const v of TOOLS) if (new RegExp(`(?<![a-z])${esc(v)}(?![a-z])`).test(jl)) jdTerms.add(v);
+    const allowed = new Set();
+    if (years != null && !isNaN(years)) { allowed.add(String(Math.floor(years))); allowed.add(String(Math.round(years))); allowed.add(String(years)); }
+    const cvBi = new Set(bigrams(contentWords(cvText)));
+    const jdBi = new Set(bigrams(contentWords(jdText || "")).filter((b) => !cvBi.has(b)));
+    return { idx, cvText, forbidden: (missing || []).filter(Boolean), jdTerms: [...jdTerms], allowed, minSupport: 0.45, jdBigrams: jdBi };
+  }
+
+  function checkItem(text, sourceIds, ctx, section, entryId) {
+    const problems = [];
+    let ids = (sourceIds || []).filter(Boolean);
+    if (!ids.length) return { ok: false, problems: ["không trỏ về câu nào trong CV gốc"], support: 0, sources: [] };
+    const unknown = ids.filter((s) => !ctx.idx[s]);
+    if (unknown.length) problems.push(`ID nguồn không tồn tại: ${unknown.join(", ")}`);
+    ids = ids.filter((s) => ctx.idx[s]);
+    if (!ids.length) return { ok: false, problems, support: 0, sources: [] };
+    const sources = ids.map((s) => ({ id: s, text: ctx.idx[s].text }));
+    const src = sources.map((x) => x.text).join("\n");
+    if (section === "experience" && entryId) {
+      const foreign = ids.filter((s) => ctx.idx[s].entry !== entryId);
+      if (foreign.length) problems.push(`trích nguồn từ công việc khác (${foreign.join(", ")})`);
+    }
+    const srcNums = numbers(src);
+    for (const n of numbers(text)) if (!srcNums.has(n) && !ctx.allowed.has(n)) problems.push(`số liệu “${n}” không có trong nguồn`);
+    const scope = ["summary", "skills", "cover"].includes(section) ? ctx.cvText : src;
+    for (const term of new Set([...ctx.jdTerms, ...TOOLS])) if (present(term, text) && !present(term, scope)) problems.push(`công cụ/kỹ năng “${term}” không có trong CV gốc`);
+    for (const m of String(text).matchAll(HARD)) {
+      if (SAFE.has(m[0])) continue;
+      if (!present(m[0], ctx.cvText)) problems.push(`thuật ngữ “${m[0]}” không có trong CV gốc`);
+    }
+    for (const miss of ctx.forbidden) {
+      const mm = String(miss).trim();
+      if (mm.length > 2 && mm.length <= 40 && present(mm, text) && !present(mm, scope)) problems.push(`đưa vào kỹ năng còn thiếu “${mm}”`);
+    }
+    for (const rx of CLAIMS) {
+      const m = String(text).match(rx);
+      if (m && !rx.test(ctx.cvText)) problems.push(`khẳng định không có trong CV: “${m[0]}”`);
+    }
+    const cw = contentWords(text);
+    const srcStems = new Set(contentWords(src).map(stem));
+    if (ctx.jdBigrams.size) {
+      for (let i = 1; i < cw.length; i++) {
+        const a = stem(cw[i - 1]), b = stem(cw[i]);
+        if (ctx.jdBigrams.has(a + "|" + b) && !(srcStems.has(a) && srcStems.has(b))) problems.push(`cụm từ lấy từ JD cần kiểm chứng: “${cw[i - 1]} ${cw[i]}”`);
+      }
+    }
+    const support = cw.length ? cw.filter((w) => srcStems.has(stem(w))).length / cw.length : 1;
+    if (["experience", "summary", "cover"].includes(section) && support < ctx.minSupport) problems.push(`nội dung khác xa nguồn (độ trùng ${Math.round(support * 100)}% < ${Math.round(ctx.minSupport * 100)}%)`);
+    const uniq = [...new Set(problems)];
+    return { ok: !uniq.length, problems: uniq, support: Math.round(support * 100) / 100, sources };
+  }
+  const isSoft = (p) => p.startsWith("nội dung khác xa nguồn") || p.startsWith("cụm từ lấy từ JD");
+
+  JT.trace = { buildContext, checkItem, isSoft, stem, contentWords, numbers, present, normText, CLAIMS, TOOLS };
+})(globalThis.JT = globalThis.JT || {});
+
+</script>
+<script>
+/* Master CV parsing → structured CV with source IDs (S1, E1.B2, SK3, ED1.D1, C1, X2…). Port of cv_parse.py. */
+(function (JT) {
+  "use strict";
+  const BUL = "•●▪◦‣∙·-*–";
+  const MONTH = "(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*\\.?";
+  const DATE = `(?:\\d{1,2}\\/\\d{4}|${MONTH}\\s+\\d{4}|\\d{4})`;
+  const END = `(?:${DATE}|Present|Current|Now|Hiện tại|nay)`;
+  const DATE_RANGE = new RegExp(`(${DATE})\\s*(?:-|–|—|to|đến)\\s*(${END})\\s*$`, "i");
+  const SECTIONS = [
+    ["summary", /^(?:summary|profile|about( me)?|objective|professional summary|career objective|giới thiệu|mục tiêu( nghề nghiệp)?|tóm tắt)$/i],
+    ["experience", /^(?:(work |professional )?experience|employment( history)?|work history|career history|kinh nghiệm( làm việc)?)$/i],
+    ["education", /^(?:education|academic( background)?|học vấn|trình độ học vấn)$/i],
+    ["skills", /^(?:skills|competencies|expertise|kỹ năng|technical skills|key skills)$/i],
+    ["certifications", /^(?:certifications?|certificates?|licenses?|chứng chỉ)$/i],
+    ["projects", /^(?:projects?|dự án)$/i],
+    ["awards", /^(?:awards?|honou?rs|achievements|giải thưởng)$/i],
+    ["extracurriculars", /^(?:extracurriculars?|activities|volunteer(ing)?|leadership|hoạt động( ngoại khoá)?)$/i],
+    ["languages", /^(?:languages?|ngoại ngữ)$/i],
+    ["publications", /^(?:publications?)$/i],
+  ];
+  const PREFIX = { certifications: "C", projects: "P", awards: "A", extracurriculars: "X", languages: "L", publications: "PB" };
+  const isBullet = (t) => { t = t.trimStart(); return !!t && BUL.includes(t[0]) && (t.length === 1 || t[1] === " "); };
+  function stripBullet(t) { t = t.trim(); while (t && BUL.includes(t[0]) && (t.length === 1 || t[1] === " ")) t = t.slice(1).trim(); return t; }
+  const sectionType = (title) => { const t = title.trim().replace(/[:：]$/, ""); for (const [k, rx] of SECTIONS) if (rx.test(t)) return k; return "other"; };
+  const isUpper = (s) => { const l = s.replace(/[^A-Za-zÀ-ỹ]/g, ""); return !!l && l === l.toUpperCase(); };
+  const titleCase = (s) => s.toLowerCase().replace(/(^|[\s(/-])(\S)/g, (m, a, b) => a + b.toUpperCase());
+
+  // ------------------------------------------------------------ PDF (pdf.js items)
+  function linesFromPdf(pages) {
+    const all = [];
+    const fontCount = {};
+    pages.forEach((pg) => pg.items.forEach((it) => { if (it.str.trim()) fontCount[it.fontName] = (fontCount[it.fontName] || 0) + it.str.length; }));
+    const bodyFont = Object.entries(fontCount).sort((a, b) => b[1] - a[1])[0]?.[0];
+    pages.forEach((pg, pno) => {
+      const items = pg.items.filter((it) => it.str !== "").map((it) => ({
+        str: /^(\S )+\S$/.test(it.str) && it.str.length >= 3 ? it.str.replace(/ /g, "") : it.str,
+        x: it.transform[4], y: it.transform[5], w: it.width, size: Math.abs(it.transform[3]) || Math.abs(it.transform[0]), font: it.fontName,
+      }));
+      items.sort((a, b) => b.y - a.y || a.x - b.x);
+      const rows = [];
+      for (const it of items) {
+        const r = rows.find((row) => Math.abs(row.y - it.y) <= 2.5);
+        if (r) r.items.push(it); else rows.push({ y: it.y, items: [it] });
+      }
+      rows.sort((a, b) => b.y - a.y);
+      for (const row of rows) {
+        row.items.sort((a, b) => a.x - b.x);
+        const segs = [];
+        let cur = null, lastEnd = -1e9;
+        for (const it of row.items) {
+          const gap = it.x - lastEnd;
+          const isB = BUL.includes(it.str.trim()) && it.str.trim().length === 1;
+          if (!cur || (it.str.trim() && (gap > 40 || (isB && gap > 5)))) { cur = { parts: [], x: it.x, fonts: [] }; segs.push(cur); }
+          const prev = cur.parts[cur.parts.length - 1];
+          if (prev !== undefined && gap > 1.5 && !/\s$/.test(prev) && !/^\s/.test(it.str)) cur.parts.push(" ");
+          cur.parts.push(it.str);
+          if (isB) cur.parts.push(" ");
+          if (it.str.trim()) cur.fonts.push(it.font);
+          lastEnd = it.x + it.w;
+        }
+        const segObjs = segs.map((s) => ({ text: s.parts.join("").replace(/\s+/g, " ").trim(), x: s.x, bold: s.fonts.length > 0 && s.fonts.every((f) => f !== bodyFont) }))
+          .filter((s) => s.text);
+        if (!segObjs.length) continue;
+        all.push({ text: segObjs.map((s) => s.text).join("   "), page: pno, y: row.y, x: segObjs[0].x, size: Math.max(...row.items.map((i) => i.size)),
+          bold: segObjs.every((s) => s.bold), segs: segObjs });
+      }
+    });
+    markHeaders(all);
+    return all;
+  }
+  function markHeaders(lines) {
+    const sizes = {};
+    lines.forEach((l) => { const k = Math.round(l.size * 10) / 10; sizes[k] = (sizes[k] || 0) + 1; });
+    const body = +Object.entries(sizes).sort((a, b) => b[1] - a[1])[0]?.[0] || 10;
+    for (const l of lines) {
+      l.header = (l.segs || [1]).length === 1 && ((l.size >= body + 1 && isUpper(l.text) && l.text.length <= 45) || (sectionType(l.text) !== "other" && l.text.length <= 40 && (isUpper(l.text) || l.bold)));
+    }
+  }
+
+  // ------------------------------------------------------------ HTML (mammoth) / plain text
+  function linesFromHtml(html) {
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const out = [];
+    doc.body.querySelectorAll("h1,h2,h3,h4,p,li").forEach((el) => {
+      const t = el.textContent.replace(/\s+/g, " ").trim();
+      if (!t) return;
+      const strong = el.querySelector("strong,b");
+      const bold = /^H\d$/.test(el.tagName) || (strong && strong.textContent.trim() === t);
+      out.push({ text: el.tagName === "LI" ? "• " + t : t, bold, size: /^H[12]$/.test(el.tagName) ? 14 : 10, header: false });
+    });
+    out.forEach((l, i) => { l.header = i > 0 && l.text.length <= 45 && !isBullet(l.text) && (sectionType(l.text) !== "other" || (l.bold && isUpper(l.text))); });
+    return out;
+  }
+  function linesFromText(text) {
+    const out = [];
+    for (let raw of String(text).split(/\r?\n/)) {
+      const t = raw.replace(/\s+$/, "");
+      if (!t.trim()) continue;
+      const md = t.match(/^(#+)\s*(.*)$/);
+      if (md) { out.push({ text: md[2].replace(/\*/g, "").trim(), header: md[1].length >= 2, bold: true, size: 12 }); continue; }
+      const clean = t.replace(/\*\*/g, "").trim();
+      const bullet = /^\s*[-*+•●▪]\s+/.test(t);
+      out.push({ text: bullet ? "• " + clean.replace(/^[-*+•●▪]\s+/, "") : clean, header: false, bold: /^\*\*/.test(t.trim()), size: 10 });
+    }
+    out.forEach((l, i) => { if (!l.header) l.header = i > 0 && !isBullet(l.text) && l.text.length <= 40 && sectionType(l.text) !== "other"; });
+    return out;
+  }
+
+  // ------------------------------------------------------------ structure
+  function contact(lines) {
+    const text = lines.map((l) => l.text).join("  ");
+    const email = text.match(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+    const phone = text.match(/\+?\d[\d .()-]{7,}\d/);
+    const links = text.match(/(?:https?:\/\/|www\.|linkedin\.com\/|github\.com\/)\S+/g) || [];
+    let name = lines[0] ? lines[0].text.trim() : "";
+    let rest = lines.slice(1).map((l) => l.text).join("  ");
+    for (const m of [email, phone]) if (m) rest = rest.replace(m[0], " ");
+    for (const lk of links) rest = rest.replace(lk, " ");
+    return { name: isUpper(name) ? titleCase(name) : name, location: rest.replace(/[|•·]/g, " ").replace(/\s{2,}/g, " ").trim().replace(/^,|,$/g, ""),
+      phone: phone ? phone[0].trim() : "", email: email ? email[0] : "", links };
+  }
+  function columns(lines) {
+    if (!lines.some((l) => l.segs && l.segs.length > 1)) return null;
+    const starts = [...new Set(lines.flatMap((l) => (l.segs || []).map((s) => Math.round(s.x))))].sort((a, b) => a - b);
+    const clusters = [];
+    for (const x of starts) { const c = clusters[clusters.length - 1]; if (c && x - c[c.length - 1] <= 30) c.push(x); else clusters.push([x]); }
+    if (clusters.length < 2) return null;
+    const bounds = [...clusters.map((c) => c[0] - 5), 1e9];
+    const cols = clusters.map(() => []);
+    for (const l of lines) for (const s of l.segs || [{ text: l.text, x: l.x, bold: l.bold }]) {
+      for (let i = 0; i < clusters.length; i++) if (bounds[i] <= s.x && s.x < bounds[i + 1]) { cols[i].push({ text: s.text, x: s.x, bold: s.bold }); break; }
+    }
+    return cols.filter((c) => c.length);
+  }
+  function groupBullets(lines) {
+    const lead = [], bullets = [];
+    for (const l of lines) {
+      if (isBullet(l.text)) bullets.push(stripBullet(l.text));
+      else if (bullets.length) bullets[bullets.length - 1] = (bullets[bullets.length - 1] + " " + l.text.trim()).trim();
+      else lead.push(l.text.trim());
+    }
+    return [lead, bullets.filter(Boolean)];
+  }
+  function parseEntries(lines, prefix) {
+    const entries = [];
+    let cur = null, body = [];
+    const flush = () => {
+      if (!cur) return;
+      const [lead, bullets] = groupBullets(body);
+      if (lead.length && !cur.org && !/^(GPA|Thesis)/i.test(lead[0])) cur.org = lead.shift();
+      cur._d = lead; cur._b = bullets; entries.push(cur);
+    };
+    for (const l of lines) {
+      const m = !isBullet(l.text) ? l.text.match(DATE_RANGE) : null;
+      if (m && l.text.length - m[0].length < 90) {
+        flush();
+        cur = { title: l.text.slice(0, m.index).replace(/[\s|,\-–]+$/, "").trim(), org: "", dates: m[0].trim(), start: m[1], end: m[2] };
+        body = [];
+      } else if (cur) body.push(l);
+    }
+    flush();
+    return entries.map((e, i) => {
+      const id = `${prefix}${i + 1}`;
+      const title = isUpper(e.title) ? titleCase(e.title) : e.title;
+      if (prefix === "E") return { id, title, org: e.org, dates: e.dates, start: e.start, end: e.end,
+        bullets: e._b.map((t, j) => ({ id: `${id}.B${j + 1}`, text: t })), details: e._d.map((t, j) => ({ id: `${id}.D${j + 1}`, text: t })) };
+      const dets = [...(e.org ? [e.org] : []), ...e._d, ...e._b];
+      return { id, title, org: "", dates: e.dates, start: e.start, end: e.end, details: dets.map((t, j) => ({ id: `${id}.D${j + 1}`, text: t })) };
+    });
+  }
+  function parseSkills(lines) {
+    const cols = columns(lines) || [lines];
+    const groups = [];
+    for (const col of cols) {
+      let cur = null, bx = null;
+      for (const l of col) {
+        if (isBullet(l.text)) {
+          if (!cur) { cur = { name: "", items: [] }; groups.push(cur); }
+          cur.items.push(stripBullet(l.text));
+          bx = l.x;
+        } else if (cur && cur.items.length && bx != null && l.x != null && l.x > bx + 2 && !l.bold) {
+          cur.items[cur.items.length - 1] = (cur.items[cur.items.length - 1] + " " + l.text.trim()).trim();
+        } else if (l.text.includes(":") && !l.bold) {
+          const [n, ...rest] = l.text.split(":");
+          cur = { name: n.trim(), items: rest.join(":").split(/[,;]/).map((x) => x.trim()).filter(Boolean) };
+          groups.push(cur);
+        } else if (!cur || !cur.items.length || l.bold || l.x == null || (bx != null && l.x <= bx)) {
+          cur = { name: l.text.trim(), items: [] }; groups.push(cur);
+        } else {
+          cur.items[cur.items.length - 1] = (cur.items[cur.items.length - 1] + " " + l.text.trim()).trim();
+        }
+      }
+    }
+    let n = 0;
+    return groups.filter((g) => g.items.length).map((g) => ({ name: g.name, items: g.items.map((t) => ({ id: `SK${++n}`, text: t })) }));
+  }
+  function parseOther(lines, prefix) {
+    const [lead, bullets] = groupBullets(lines);
+    const items = [];
+    for (const t of [...lead, ...bullets]) {
+      if (items.length && /\|\s*\d{4}/.test(t) && !/\|\s*\d{4}/.test(items[items.length - 1])) items[items.length - 1] = `${items[items.length - 1]}, ${t}`;
+      else items.push(t);
+    }
+    return items.map((t, i) => ({ id: `${prefix}${i + 1}`, text: t }));
+  }
+  const splitSentences = (t) => t.trim().split(/(?<=[.!?])\s+(?=[A-ZÀ-Ỹ])/).map((s) => s.trim()).filter(Boolean);
+
+  function structure(lines) {
+    const known = lines.findIndex((l) => l.header && sectionType(l.text) !== "other");
+    const anyH = lines.findIndex((l) => l.header);
+    let first = known >= 0 ? known : anyH >= 0 ? anyH : lines.length;
+    if (first === 0 && lines.length > 1) first = 1;
+    lines.slice(0, first).forEach((l) => (l.header = false));
+    const cv = { contact: contact(lines.slice(0, first)), section_order: [], summary: null, experience: null, education: null, skills: null, other: [] };
+    const sections = [];
+    for (const l of lines.slice(first)) { if (l.header) sections.push([l.text.trim(), []]); else if (sections.length) sections[sections.length - 1][1].push(l); }
+    let otherN = 0;
+    for (const [title, body] of sections) {
+      const kind = sectionType(title);
+      if (kind === "summary") cv.summary = { title, sentences: splitSentences(body.map((l) => l.text.trim()).join(" ")).map((s, i) => ({ id: `S${i + 1}`, text: s })) };
+      else if (kind === "experience") cv.experience = { title, entries: parseEntries(body, "E") };
+      else if (kind === "education") cv.education = { title, entries: parseEntries(body, "ED") };
+      else if (kind === "skills") cv.skills = { title, groups: parseSkills(body) };
+      else cv.other.push({ key: kind === "other" ? `other${++otherN}` : kind, title, items: parseOther(body, kind === "other" ? `O${otherN}.` : PREFIX[kind]) });
+      cv.section_order.push(kind === "other" ? `other${otherN}` : kind);
+    }
+    cv.raw_text = lines.map((l) => l.text).join("\n");
+    cv.warnings = validate(cv);
+    return cv;
+  }
+  function validate(cv) {
+    const p = [];
+    if (!cv.contact.name) p.push("Không tìm thấy tên");
+    if (!cv.experience || !cv.experience.entries.length) p.push("Không tìm thấy mục kinh nghiệm (cần dòng 'Chức danh  MM/YYYY - MM/YYYY')");
+    else cv.experience.entries.forEach((e) => { if (!e.bullets.length) p.push(`Kinh nghiệm '${e.title}' không có bullet nào`); });
+    if (!cv.skills) p.push("Không tìm thấy mục kỹ năng");
+    return p;
+  }
+  function sourceIndex(cv) {
+    const idx = {};
+    (cv.summary?.sentences || []).forEach((s) => (idx[s.id] = { text: s.text, section: "summary" }));
+    (cv.experience?.entries || []).forEach((e) => {
+      idx[e.id] = { text: `${e.title} — ${e.org} (${e.dates})`, section: "experience", entry: e.id };
+      [...e.bullets, ...(e.details || [])].forEach((b) => (idx[b.id] = { text: b.text, section: "experience", entry: e.id }));
+    });
+    (cv.education?.entries || []).forEach((e) => {
+      idx[e.id] = { text: `${e.title} (${e.dates})`, section: "education", entry: e.id };
+      e.details.forEach((d) => (idx[d.id] = { text: d.text, section: "education", entry: e.id }));
+    });
+    (cv.skills?.groups || []).forEach((g) => g.items.forEach((it) => (idx[it.id] = { text: it.text, section: "skills", group: g.name })));
+    (cv.other || []).forEach((s) => s.items.forEach((it) => (idx[it.id] = { text: it.text, section: s.key })));
+    return idx;
+  }
+  /** Verify an AI-structured CV against the raw text: every item must exist (normalized) in the original. */
+  function verifyAgainstRaw(cv, raw) {
+    const n = (s) => String(s).toLowerCase().replace(/[^a-z0-9à-ỹ%$+]+/g, "");
+    const R = n(raw);
+    const bad = [];
+    for (const [id, v] of Object.entries(sourceIndex(cv))) {
+      if (/^E\d+$|^ED\d+$/.test(id)) continue;
+      if (!R.includes(n(v.text).slice(0, 60))) bad.push(id);
+    }
+    return bad;
+  }
+
+  // ------------------------------------------------------------ years / profile (heuristic)
+  const JUNIOR = /assistant|intern|collaborator|volunteer|trainee|part[- ]time|student|thực tập|cộng tác/i;
+  function monthOf(s, today) {
+    s = String(s || "").trim();
+    if (/^(present|current|now|hiện tại|nay)/i.test(s)) return [today.getFullYear(), today.getMonth() + 1];
+    let m = s.match(/^(\d{1,2})\/(\d{4})/); if (m) return [+m[2], +m[1]];
+    m = s.match(/^([A-Za-z]{3})[a-z]*\.?\s+(\d{4})/);
+    if (m) return [+m[2], "jan feb mar apr may jun jul aug sep oct nov dec".split(" ").indexOf(m[1].toLowerCase()) + 1];
+    m = s.match(/^(\d{4})/); if (m) return [+m[1], 1];
+    return null;
+  }
+  function yearsExperience(cv, today = new Date()) {
+    const spans = [];
+    for (const e of cv.experience?.entries || []) {
+      if (JUNIOR.test(e.title)) continue;
+      const a = monthOf(e.start, today), b = monthOf(e.end, today);
+      if (a && b) { const A = a[0] * 12 + a[1], B = b[0] * 12 + b[1]; if (B >= A) spans.push([A, B]); }
+    }
+    spans.sort((x, y) => x[0] - y[0]);
+    const merged = [];
+    for (const [a, b] of spans) { const l = merged[merged.length - 1]; if (l && a <= l[1]) l[1] = Math.max(l[1], b); else merged.push([a, b]); }
+    return Math.round(merged.reduce((s, [a, b]) => s + b - a + 1, 0) / 12 * 10) / 10;
+  }
+
+  JT.cv = { linesFromPdf, linesFromHtml, linesFromText, structure, sourceIndex, verifyAgainstRaw, yearsExperience, isUpper, JUNIOR };
+})(globalThis.JT = globalThis.JT || {});
+
+</script>
+<script>
+/* Core pipeline: prompts, scoring, tailoring with traceability, cover letters, search links. */
+(function (JT) {
+  "use strict";
+  const T = () => JT.trace, C = () => JT.cv;
+
+  // ================================================================ cover-letter style rules
+  // Words and phrases that read as machine-written. Checked in every cover letter (AI or template).
+  const AI_PHRASES = [
+    "i am writing to express", "i'm writing to express", "i am excited", "i'm excited", "excited to", "thrilled", "passionate", "passion for",
+    "delve", "leverage", "leveraging", "furthermore", "moreover", "additionally", "in addition", "seamless", "seamlessly", "robust", "dynamic",
+    "synergy", "tapestry", "navigate", "navigating", "landscape", "foster", "fostering", "spearhead", "cutting-edge", "testament", "invaluable",
+    "honed", "showcase", "resonate", "resonates", "elevate", "streamline", "unwavering", "meticulous", "pivotal", "realm", "embark", "journey",
+    "hit the ground running", "perfect fit", "ideal candidate", "team player", "go-getter", "think outside the box", "eager to", "keen to",
+    "i am confident that", "i'm confident that", "align with", "aligns with", "aligned with your", "deeply", "truly", "thrive", "game-changer",
+    "look no further", "unique blend", "proven track record", "track record of success", "dear sir or madam", "to whom it may concern",
+  ];
+  const DASHES = /[—―]/;           // em dash / horizontal bar
+  const EN_DASH_PROSE = /\s–\s/;   // en dash used as a sentence dash
+  function styleProblems(text) {
+    const p = [];
+    const low = text.toLowerCase();
+    if (DASHES.test(text)) p.push("có em dash (—)");
+    if (EN_DASH_PROSE.test(text)) p.push("có gạch nối dài dùng như em dash ( – )");
+    for (const w of AI_PHRASES) if (new RegExp(`(?<![a-z])${w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![a-z])`).test(low)) p.push(`cụm từ “${w}”`);
+    return p;
+  }
+  /** Last-resort clean-up so a letter never ships with an em dash. */
+  function sanitizeDashes(s) {
+    return String(s).replace(/\s*[—―]\s*/g, ", ").replace(/\s–\s/g, ", ").replace(/(\d{1,2}:\d{2})–(\d{1,2}:\d{2})/g, "$1 to $2").replace(/,\s*,/g, ",");
+  }
+
+  // ================================================================ prompts (one string each; same rules as the Python prompts/)
+  const J = (x) => JSON.stringify(x, null, 1);
+  const P = {
+    structureCv: (raw) => `Structure this CV text into JSON. Copy every sentence EXACTLY as written (do not rephrase, fix, translate or summarise).
+Assign ids: summary sentences S1.., experience entries E1.. with bullets E1.B1.., education entries ED1.. with details ED1.D1.., skills SK1.. (numbered across all groups), other sections' items with a prefix (C for certifications, X for activities/extracurriculars, P projects, A awards, L languages, O1. for anything else).
+Return ONLY JSON: {"contact":{"name":"","location":"","phone":"","email":"","links":[]},"section_order":["summary","skills","experience","education","certifications"],
+"summary":{"title":"SUMMARY","sentences":[{"id":"S1","text":""}]},
+"experience":{"title":"WORK EXPERIENCE","entries":[{"id":"E1","title":"","org":"","dates":"","start":"MM/YYYY","end":"MM/YYYY or Present","bullets":[{"id":"E1.B1","text":""}],"details":[]}]},
+"education":{"title":"EDUCATION","entries":[{"id":"ED1","title":"institution","org":"","dates":"","start":"","end":"","details":[{"id":"ED1.D1","text":""}]}]},
+"skills":{"title":"SKILLS","groups":[{"name":"","items":[{"id":"SK1","text":""}]}]},
+"other":[{"key":"certifications","title":"CERTIFICATIONS","items":[{"id":"C1","text":""}]}]}
+
+CV text:
+${raw.slice(0, 40000)}`,
+
+    profile: (cv, today) => `You are a career analyst. Read the candidate's master CV (JSON, every item has a source id) and produce a factual profile and job-search keywords.
+Rules: the CV is the only source of truth; do not infer anything it does not state or directly imply; do not assume any profession.
+years_experience: professional work only (exclude short assistant/volunteer/student roles unless clearly professional), today is ${today}, one decimal.
+seniority: entry | junior | mid | senior | lead. achievements: concrete/quantified results copied faithfully with their source_id.
+Keywords are SEARCH terms (job titles recruiters post), not CV claims: primary_titles (main/recent roles), equivalent_titles (synonyms, junior/associate variants, adjacent analyst/coordinator titles), transferable_titles (other functions/industries where demonstrated skills transfer, each with a short reason), skill_keywords (10-25). Prefer realistic titles for the seniority.
+Return ONLY JSON: {"profile":{"roles":[],"industries":[],"skills":[],"tools":[],"years_experience":0,"languages":[],"achievements":[{"text":"","source_id":""}],"seniority":""},
+"keywords":{"primary_titles":[],"equivalent_titles":[],"transferable_titles":[{"title":"","why":""}],"skill_keywords":[]}}
+
+Master CV:
+${J(cv)}`,
+
+    extractJob: (url, text) => `Extract this job posting into JSON. Copy facts, do not invent; unknown → "" or [].
+Also extract what it says about working hours / time zone (do not guess).
+remote_type: "remote" (fully remote) | "hybrid" | "onsite" | "unknown". location_eligibility: where candidates may live, as stated (e.g. ["Worldwide"], ["United States"], ["APAC","Vietnam"]); include restrictions anywhere in the text ("authorized to work in the US" → ["United States"]).
+required_hours: fixed daily schedule {"start":"HH:MM","end":"HH:MM","tz":"IANA zone"} or null. overlap_hours: {"hours":N,"tz":"IANA zone","window_start":null,"window_end":null} or null.
+timezone_range: {"min_utc_offset":N,"max_utc_offset":N,"residency":true if the candidate must LIVE in it} or null. business_hours_timezones: zones whose business hours must be worked when no hours are given (e.g. "U.S. business hours" → ["America/New_York"]).
+async_friendly: true only if stated. evidence: up to 4 short exact phrases (max 15 words) about hours/location.
+Return ONLY JSON: {"company":"","title":"","description":"full job description text, cleaned","remote_type":"","location_eligibility":[],"salary":"","currency":"","requirements":[],
+"timezone_requirement":"","required_hours":null,"overlap_hours":null,"timezone_range":null,"business_hours_timezones":[],"async_friendly":false,"evidence":[],"language":"English"}
+
+URL: ${url || "(none)"}
+Page / pasted text:
+${String(text).slice(0, 30000)}`,
+
+    score: (profile, idx, job, tzLabel) => `You are a hard-nosed recruiter. Score how well this candidate fits this job, 0-100, using ONLY the profile and CV below. Calibrate:
+85-100 meets nearly all must-haves; 70-84 most must-haves, gaps learnable; 50-69 partial fit or stretch; <50 wrong field or missing hard requirements (licence, language, years, specific platform).
+Consider title & responsibilities vs real work, required years vs ${profile.years_experience} years, languages, tools, domain, seniority. Transferable skills count, less than direct experience.
+matched: requirements the CV clearly shows (cite source id in brackets, e.g. "SQL [SK10]"). transferable: shown indirectly (cite ids). missing: not shown at all. red_flags: e.g. "requires fluent German", "8+ years", "US work authorization", "on-call nights". reasoning: 2-4 plain sentences in Vietnamese.
+Return ONLY JSON: {"score":0,"matched":[],"transferable":[],"missing":[],"red_flags":[],"reasoning":""}
+
+Profile: ${J(profile)}
+CV (source ids): ${J(idx)}
+Job: ${job.title} at ${job.company}. Location eligibility: ${(job.locations || []).join(", ") || "(not listed)"}. Time-zone check: ${tzLabel}
+${String(job.description).slice(0, 15000)}`,
+
+    tailor: (cv, job, score, words, pages) => `You tailor a candidate's master CV to one job description so it reads as written for this role and passes ATS keyword screening, WITHOUT inventing anything.
+ALLOWED: rewrite bullets, summary and skills using the JD's vocabulary when the underlying work is genuinely the same; reorder, select, emphasise the most relevant; shorten or drop irrelevant bullets, entries or sections; highlight transferable skills; rewrite the summary (2-3 sentences) and skills for this JD; mention remote/international collaboration ONLY if the CV states it; weave in JD keywords that truthfully describe the candidate.
+FORBIDDEN (an automated checker DELETES any item that does this): adding jobs, tasks, skills, tools, platforms, titles, companies, numbers, degrees, certifications or languages the CV does not state or directly imply; changing any number; moving an achievement or tool from one job to another (a bullet under E1 may only cite E1's sources); using JD terms the candidate lacks (put them in "missing"); claiming seniority, team leadership, remote work, international teams, certifications or fluency the CV does not state. Do not use em dashes.
+TRACEABILITY (mandatory): every summary sentence, skill item and bullet carries "source_ids" = ids of the CV sentences it is derived from. Titles, companies and dates are copied automatically; do not write them.
+LENGTH: not longer than the original (${words} words, ${pages} page(s)). Prefer 3-5 bullets for the most relevant job, fewer for others.
+Return ONLY JSON: {"summary":[{"text":"","source_ids":[""]}],"skills":[{"group":"","items":[{"text":"","source_ids":[""]}]}],
+"experience":[{"id":"E1","bullets":[{"text":"","source_ids":["E1.B1"],"why":"short reason in Vietnamese"}]}],"education":[{"id":"ED1","details":["ED1.D1"]}],
+"other_sections":[{"key":"certifications","items":["C1"]}],"section_order":["summary","skills","experience","education","certifications"],"missing":[],"keywords_used":[],"notes":"1-2 sentences in Vietnamese"}
+
+Job: ${job.title} at ${job.company}
+${String(job.description).slice(0, 15000)}
+
+Fit analysis: ${J(score || {})}
+Master CV: ${J(strip(cv))}`,
+
+    verify: (items) => `You are a strict fact-checker. For each tailored CV item decide whether it is fully supported by its cited source sentences from the original CV.
+supported = true only if every fact (actions, scope, tools, numbers, outcomes, audiences) is stated in or directly implied by the sources. Synonyms / job-description vocabulary with the same meaning are fine. supported = false if it adds anything, exaggerates ("led" vs "assisted") or changes a number.
+Return ONLY JSON: {"results":[{"key":"","supported":true,"issue":""}]}
+${items.map((it) => `### ${it.key}\nITEM: ${it.text}\nSOURCES:\n${it.sources.map((s) => `- [${s.id}] ${s.text}`).join("\n")}`).join("\n\n")}`,
+
+    cover: (job, tz, lang, hint, avail, final, idx, name, problems) => `Write a cover letter for a real candidate applying to a real remote job.
+Language: ${lang}. Length: 250-350 words in the body paragraphs (greeting and sign-off excluded).
+Structure in this order: 1) why THIS company and role, using concrete details from the JD (product, customers, problem the role solves), no generic praise; 2) two or three real achievements from the CV that best match, numbers exactly as in the CV, naming the employer; 3) location and hours: the candidate is based in Vietnam (UTC+7); state the overlap they can offer: ${hint}; 4) a short close (1-2 sentences).
+Truthfulness: ONLY facts from the CV. Never add skills, tools, numbers, titles, remote/international experience or certifications the CV does not state.
+Style rules (strict): no date line; no em dashes or en dashes used as dashes (use commas or full stops; write time ranges like "15:00 to 19:00"); plain, specific, human wording; short sentences; no clichés or stock phrases. Never use any of these words/phrases: ${AI_PHRASES.join(", ")}.
+${problems && problems.length ? "Your previous draft broke these rules, fix them: " + problems.join("; ") + "\n" : ""}Return ONLY JSON: {"language":"","greeting":"","paragraphs":["","","",""],"closing":""}
+
+Job: ${job.title} at ${job.company}
+${String(job.description).slice(0, 12000)}
+Time-zone analysis: ${J(tz || {})}. Candidate availability: ${avail}
+Tailored CV content (fact-checked): ${J(final)}
+CV index (source of truth): ${J(idx)}
+Candidate name: ${name}`,
+
+    answer: (job, idx, q, avail, tzLabel) => `Draft an answer to this application-form question for a real candidate, who will review it. Use ONLY facts from the CV index. If the question needs information the CV does not contain (salary, notice period, visa, references), answer with "[ĐIỀN TAY: <what is needed>]". Location/time-zone: based in Vietnam (UTC+7), available ${avail} ICT. ${tzLabel}. 40-150 words, language of the question, no em dashes, plain wording, none of: ${AI_PHRASES.slice(0, 30).join(", ")}.
+Return ONLY JSON: {"answer":""}
+Job: ${job.title} at ${job.company}
+${String(job.description).slice(0, 8000)}
+CV index: ${J(idx)}
+Question: ${q}`,
+  };
+  function strip(cv) { const o = { ...cv }; delete o.raw_text; delete o.warnings; return o; }
+
+  // ================================================================ heuristic profile + keywords
+  const FAMILIES = [
+    [/\b(?:business analyst|business analysis|requirements)/i, ["Business Analyst", "Junior Business Analyst", "Associate Business Analyst", "Business Systems Analyst", "Operations Analyst", "Reporting Analyst", "Commercial Analyst", "Sales Operations Analyst", "Product Analyst"],
+      [["Data Analyst", "Excel/SQL/Google Analytics reporting"], ["Market Research Analyst", "market & competitor analysis"], ["Customer Success Associate", "client liaison, retention"], ["Project Coordinator", "stakeholder management, documentation"]]],
+    [/\b(?:data analy|reporting|analytics)/i, ["Data Analyst", "Junior Data Analyst", "Reporting Analyst", "BI Analyst", "Insights Analyst"], [["Marketing Analyst", "campaign data analysis"]]],
+    [/\b(?:social media|digital marketing|content|marketing)/i, ["Social Media Specialist", "Social Media Coordinator", "Digital Marketing Specialist", "Marketing Coordinator", "Marketing Analyst"], [["Growth Analyst", "campaign optimisation"]]],
+    [/\b(?:laborator|research assistant|chemist|pharma)/i, ["Research Assistant", "Research Analyst"], [["Pharmaceutical Business Analyst", "pharmaceutical degree + BA experience"], ["Regulatory Affairs Associate", "documentation accuracy (stretch)"]]],
+    [/\b(?:external relations|partnership|sponsor|business development)/i, ["Partnerships Coordinator", "Business Development Associate"], [["Account Coordinator", "relationship management"]]],
+    [/\b(?:customer success|account manag|client)/i, ["Customer Success Associate", "Customer Success Specialist", "Customer Success Manager", "Account Coordinator"], []],
+    [/\b(?:customer support|customer service)/i, ["Customer Support Specialist", "Customer Experience Specialist"], []],
+    [/\b(?:software engineer|developer|programmer)/i, ["Software Engineer", "Software Developer", "Backend Engineer", "Frontend Engineer"], []],
+    [/\b(?:project manager|project coordinator|program)/i, ["Project Coordinator", "Project Manager", "Operations Coordinator"], []],
+    [/\b(?:accountant|accounting|financ)/i, ["Accountant", "Financial Analyst", "FP&A Analyst"], []],
+    [/\b(?:recruit|talent|human resources)/i, ["Recruiter", "Talent Acquisition Coordinator", "HR Coordinator"], []],
+    [/\b(?:designer|ux\b|ui\b)/i, ["Product Designer", "UX Designer", "Graphic Designer"], []],
+    [/\b(?:teacher|tutor|instructor)/i, ["Online English Teacher", "Tutor", "Instructional Designer"], []],
+  ];
+  const LANGS = ["English", "Vietnamese", "Chinese", "Mandarin", "Japanese", "Korean", "French", "German", "Spanish", "Portuguese", "Russian", "Thai", "Indonesian"];
+  function heuristicProfile(cv) {
+    const idx = C().sourceIndex(cv);
+    const text = Object.values(idx).map((v) => v.text).join("\n");
+    const roles = (cv.experience?.entries || []).map((e) => e.title);
+    const skills = [], tools = [];
+    for (const g of cv.skills?.groups || []) {
+      const isTool = /tool|software|technical|tech stack|công cụ/i.test(g.name);
+      for (const it of g.items) {
+        if (isTool || T().TOOLS.some((w) => new RegExp(`\\b${w}\\b`, "i").test(it.text))) tools.push(it.text);
+        else if (!LANGS.some((l) => it.text.includes(l))) skills.push(it.text);
+      }
+    }
+    const languages = [];
+    for (const l of LANGS) { const m = text.match(new RegExp(`${l}[^,;\\n]*`)); if (m) languages.push(m[0].trim()); }
+    if (/vietnam/i.test(cv.contact.location + text) && !languages.some((l) => /Vietnamese/.test(l))) languages.push("Vietnamese (native, suy ra từ địa chỉ/học vấn, hãy xác nhận)");
+    const achievements = Object.entries(idx).filter(([k, v]) => v.section === "experience" && k.includes(".") && /\d+%|\$\s?\d|\d+\+|\b\d{2,}\b/.test(v.text)).map(([k, v]) => ({ text: v.text, source_id: k }));
+    const yrs = C().yearsExperience(cv);
+    const profile = { roles, industries: [], skills, tools, years_experience: yrs, languages, achievements, seniority: yrs < 1 ? "entry" : yrs < 3 ? "junior" : yrs < 6 ? "mid" : "senior" };
+    const hay = [...roles, ...skills].join(" | ");
+    let eq = [], tr = [];
+    for (const [rx, e, t] of FAMILIES) if (rx.test(hay)) { eq.push(...e); tr.push(...t); }
+    roles.slice(1).forEach((r) => { if (!C().JUNIOR.test(r)) eq.push(r); });
+    const primary = roles.slice(0, 1);
+    eq = [...new Set(eq)].filter((t) => !primary.some((p) => p.toLowerCase() === t.toLowerCase()));
+    const seen = new Set([...primary, ...eq].map((x) => x.toLowerCase()));
+    const trans = [...new Map(tr.map(([t, w]) => [t, { title: t, why: w }])).values()].filter((x) => !seen.has(x.title.toLowerCase()));
+    return { profile, keywords: { primary_titles: primary, equivalent_titles: eq, transferable_titles: trans, skill_keywords: [...new Set([...skills, ...tools])] } };
+  }
+  const allTitles = (kw) => [...new Set([...(kw.primary_titles || []), ...(kw.equivalent_titles || []), ...(kw.transferable_titles || []).map((x) => (typeof x === "string" ? x : x.title))].filter(Boolean))];
+
+  // ================================================================ heuristic score
+  const tokens = (s) => new Set(T().normText(s).replace(/&/g, " ").split(" ").filter(Boolean));
+  function titleMatches(title, phrases) {
+    const tt = tokens(title);
+    for (const p of phrases || []) { const pt = tokens(typeof p === "string" ? p : p.title); if (pt.size && [...pt].every((x) => tt.has(x))) return typeof p === "string" ? p : p.title; }
+    return null;
+  }
+  const OTHER_LANGS = ["German", "French", "Spanish", "Japanese", "Korean", "Mandarin", "Chinese", "Portuguese", "Italian", "Dutch", "Russian", "Arabic", "Thai", "Indonesian", "Bahasa", "Hindi", "Turkish", "Polish"];
+  function heuristicScore(job, profile, kw, cv) {
+    const desc = job.description || "";
+    const dn = " " + T().normText(desc + " " + job.title) + " ";
+    let score = 10;
+    const matched = [], transferable = [], missing = [], flags = [];
+    let h;
+    if ((h = titleMatches(job.title, kw.primary_titles))) { score += 40; matched.push(`Chức danh khớp hướng chính (${h})`); }
+    else if ((h = titleMatches(job.title, kw.equivalent_titles))) { score += 32; matched.push(`Chức danh tương đương (${h})`); }
+    else if ((h = titleMatches(job.title, kw.transferable_titles))) { score += 24; transferable.push(`Chức danh chuyển đổi được (${h})`); }
+    const idx = C().sourceIndex(cv);
+    let found = 0;
+    for (const [sid, v] of Object.entries(idx)) {
+      if (v.section !== "skills") continue;
+      const parts = v.text.replace(/\(.*?\)/g, "").split(/[,&/]| and /).filter((p) => p.trim());
+      for (const p of parts) { const pn = T().normText(p); if (pn.length >= 3 && dn.includes(` ${pn} `)) { found++; matched.push(`${p.trim()} [${sid}]`); break; } }
+    }
+    score += Math.min(25, found * 5);
+    const counts = {};
+    T().contentWords(desc).filter((w) => w.length > 3).forEach((w) => { const s = T().stem(w); counts[s] = (counts[s] || 0) + 1; });
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 30).map((x) => x[0]);
+    const cvStems = new Set(Object.values(idx).flatMap((v) => T().contentWords(v.text).map(T().stem)));
+    if (top.length) { const cov = top.filter((w) => cvStems.has(w)).length / top.length; score += Math.round(20 * Math.min(1, cov / 0.6)); if (cov >= 0.3) transferable.push(`CV phủ ${Math.round(cov * 100)}% từ khoá chính của JD`); }
+    const reqY = [...desc.matchAll(/(\d{1,2})\s*\+?\s*(?:-|–|to)?\s*(?:\d{1,2}\s*)?\+?\s*years?/gi)].map((m) => +m[1]).filter((v) => v <= 20);
+    const yrs = +profile.years_experience || 0;
+    if (reqY.length) { const r = Math.min(...reqY); if (r > yrs + 0.5) { score -= r - yrs > 2 ? 20 : 10; flags.push(`Yêu cầu ${r}+ năm kinh nghiệm (hồ sơ: ${yrs})`); } }
+    if (/\b(?:senior|sr\.?|lead|manager)\b/i.test(job.title) && ["entry", "junior"].includes(profile.seniority)) { score -= 10; flags.push("Chức danh cấp cao hơn hồ sơ"); }
+    const have = (profile.languages || []).join(" ").toLowerCase();
+    for (const l of OTHER_LANGS) {
+      if (new RegExp(`\\b(?:fluent|fluency|native|business[- ]level|proficien\\w*|C1|C2)\\b[^.\\n]{0,40}\\b${l}\\b|\\b${l}\\b[^.\\n]{0,25}\\b(?:fluen\\w*|native|required|C1|C2)\\b`, "i").test(desc) && !have.includes(l.toLowerCase())) {
+        score -= 25; flags.push(`Yêu cầu tiếng ${l}`); missing.push(`${l} language`); break;
+      }
+    }
+    const cvText = " " + T().normText(Object.values(idx).map((v) => v.text).join("\n")) + " ";
+    const lines = desc.split(/\n/).map((l) => l.replace(/^\s*[•\-*]\s*/, "").trim()).filter((l) => l.length > 15 && l.length < 200);
+    for (const line of lines.slice(0, 40)) {
+      const ws = T().normText(line).split(" ").filter((w) => w.length > 3 && !["with", "experience", "ability", "strong", "skills", "years", "knowledge", "working", "able", "plus", "preferred", "required", "including", "such", "other"].includes(w));
+      if (ws.length >= 3 && /^(?:\d|experience|strong|knowledge|proficien|familiar|ability|bachelor|degree|fluent|must|you have|required|\w+ (?:skills|experience))/i.test(line)
+        && ws.filter((w) => cvText.includes(" " + w)).length / ws.length < 0.25) missing.push(line.slice(0, 100));
+    }
+    for (const [rx, lab] of [[/\bon[- ]call\b|24\s*[x/]\s*7/i, "Có trực on-call/24x7"], [/commission[- ]only/i, "Chỉ hưởng hoa hồng"], [/\btravel(?:ling)? (?:up to )?\d{2}%/i, "Yêu cầu đi công tác nhiều"]]) {
+      if (rx.test(desc)) { flags.push(lab); score -= 5; }
+    }
+    score = Math.max(0, Math.min(100, score));
+    return { score, matched: matched.slice(0, 12), transferable, missing: missing.slice(0, 10), red_flags: flags, method: "heuristic",
+      reasoning: `Chấm theo từ khoá (chưa dùng AI): ${matched.length} điểm khớp, ${transferable.length} chuyển đổi, ${missing.length} yêu cầu chưa thấy trong CV, ${flags.length} cảnh báo.` };
+  }
+
+  // ================================================================ hard filter
+  const EXCL_TITLE = ["director", "vice president", "vp ", "head of", "principal", "staff engineer"];
+  const EXCL_DESC = ["security clearance", "public trust clearance", "commission only", "commission-only", "unpaid"];
+  function hardFilter(job, x, settings) {
+    const reasons = [];
+    let rtype = job.remote_type || "unknown";
+    if (x && ["hybrid", "onsite"].includes(x.remote_type)) rtype = x.remote_type;
+    if (["unknown", "remote"].includes(rtype)) { const again = JT.elig.remoteType(job.title, "", job.description, rtype); if (["hybrid", "onsite"].includes(again)) rtype = again; }
+    if (["hybrid", "onsite"].includes(rtype)) reasons.push(`Không phải remote 100% (${rtype})`);
+    const elig = JT.elig.check(job, x && x.location_eligibility);
+    if (elig.verdict === "reject") reasons.push(elig.reason);
+    const tz = JT.tz.analyzeJob(job, x, settings);
+    if (tz.verdict === "reject") reasons.push(`Múi giờ: ${tz.label}. ${tz.reason}`);
+    const tl = String(job.title).toLowerCase() + " ", dl = String(job.description).toLowerCase();
+    const ex = [...EXCL_TITLE, ...((settings && settings.exclude_title) || [])];
+    for (const k of ex) if (k && tl.includes(k.toLowerCase())) { reasons.push(`Tiêu đề chứa từ khoá loại trừ “${k.trim()}”`); break; }
+    for (const k of EXCL_DESC) if (new RegExp(`\\b${k}\\b`).test(dl)) { reasons.push(`Mô tả chứa từ khoá loại trừ “${k}”`); break; }
+    return { remote_type: rtype, elig, tz, reasons };
+  }
+
+  // ================================================================ tailoring
+  function jdWeights(job) {
+    const w = {};
+    T().contentWords(job.description || "").forEach((t) => { const s = T().stem(t); w[s] = (w[s] || 0) + 1; });
+    T().contentWords(job.title).forEach((t) => { const s = T().stem(t); w[s] = (w[s] || 0) + 4; });
+    return w;
+  }
+  function relevance(text, w) {
+    const st = [...new Set(T().contentWords(text).map(T().stem))];
+    return st.length ? st.reduce((a, s) => a + Math.log1p(w[s] || 0), 0) / Math.sqrt(st.length) : 0;
+  }
+  function heuristicPlan(cv, job, score) {
+    const w = jdWeights(job);
+    const plan = { summary: [], skills: [], experience: [], education: [], other_sections: [], missing: [], keywords_used: [] };
+    plan.summary = (cv.summary?.sentences || []).map((s) => ({ text: s.text, source_ids: [s.id] }));
+    plan.skills = (cv.skills?.groups || []).map((g) => [g.items.reduce((a, i) => a + relevance(i.text, w), 0),
+      { group: g.name, items: [...g.items].sort((a, b) => relevance(b.text, w) - relevance(a.text, w)).map((i) => ({ text: i.text, source_ids: [i.id] })) }])
+      .sort((a, b) => b[0] - a[0]).map((x) => x[1]);
+    const entries = cv.experience?.entries || [];
+    const scored = entries.map((e) => {
+      const bs = [...e.bullets].sort((a, b) => relevance(b.text, w) - relevance(a.text, w));
+      const n = Math.min(4, e.bullets.length) || 1;
+      return [e.bullets.slice(0, 4).reduce((a, b) => a + relevance(b.text, w), 0) / n, e, bs];
+    });
+    const best = Math.max(0, ...scored.map((s) => s[0]));
+    for (const [rel, e, bs] of scored) {
+      const keep = rel >= 0.6 * best ? bs.length : Math.max(2, Math.ceil(bs.length / 2));
+      plan.experience.push({ id: e.id, bullets: bs.slice(0, keep).map((b) => ({ text: b.text, source_ids: [b.id], why: "giữ nguyên văn, xếp theo mức liên quan JD" })) });
+    }
+    plan.education = (cv.education?.entries || []).map((e) => ({ id: e.id, details: e.details.map((d) => d.id) }));
+    plan.other_sections = (cv.other || []).map((s) => ({ key: s.key, items: s.items.map((i) => i.id) }));
+    let order = (cv.section_order || []).filter((k) => !/^other\d/.test(k));
+    if (order.includes("skills") && order.includes("experience")) {
+      const o = order.filter((k) => k !== "skills" && k !== "experience");
+      const i = o.includes("summary") ? o.indexOf("summary") + 1 : 0;
+      order = [...o.slice(0, i), "skills", "experience", ...o.slice(i)];
+    }
+    plan.section_order = order.length ? order : ["summary", "skills", "experience", "education"];
+    plan.missing = ((score && score.missing) || []).slice(0, 10);
+    plan.notes = "Chế độ không AI: giữ nguyên văn câu chữ trong CV, chỉ sắp xếp và chọn lọc theo mức liên quan với JD.";
+    return plan;
+  }
+  function shortTerms(missing) {
+    const out = [];
+    for (let m of missing || []) {
+      m = String(m).trim();
+      if (m.split(/\s+/).length <= 4) out.push(m);
+      out.push(...(m.match(/\b(?:[A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)?|[A-Z]{2,6})\b/g) || []));
+    }
+    const bad = new Set(["experience", "ability", "strong", "the", "and", "with", "bachelor", "master", "degree"]);
+    return [...new Set(out)].filter((t) => !bad.has(t.toLowerCase()));
+  }
+  /** verify: async (items[{key,text,sources}]) → {key: {supported, issue}} | null */
+  async function tracePlan(plan, cv, job, years, verify) {
+    const idx = C().sourceIndex(cv);
+    const ctx = T().buildContext(idx, job.description || "", shortTerms(plan.missing), years);
+    const report = { kept: [], dropped: [] };
+    const recs = [];
+    const consider = (section, item, entry, label) => {
+      const text = String(item.text || "").replace(/\s*[—―]\s*/g, ", ").trim();
+      if (!text) return;
+      const r = T().checkItem(text, item.source_ids || [], ctx, section, entry);
+      const rec = { section, entry, label, text, source_ids: item.source_ids || [], sources: r.sources, support: r.support, why: item.why || "", problems: r.problems };
+      if (r.problems.some((p) => !T().isSoft(p))) { report.dropped.push(rec); return; }
+      rec.needsVerify = r.problems.length > 0;
+      recs.push(rec);
+    };
+    (plan.summary || []).forEach((it) => consider("summary", it, null, "summary"));
+    (plan.skills || []).forEach((g, gi) => (g.items || []).forEach((it) => consider("skills", it, null, `skills:${gi}:${g.group || ""}`)));
+    const ents = Object.fromEntries((cv.experience?.entries || []).map((e) => [e.id, e]));
+    for (const pe of plan.experience || []) {
+      if (!ents[pe.id]) { report.dropped.push({ section: "experience", label: pe.id, text: "(mục kinh nghiệm không tồn tại trong CV)", problems: ["ID công việc không tồn tại"], sources: [], source_ids: [] }); continue; }
+      (pe.bullets || []).forEach((b) => consider("experience", b, pe.id, pe.id));
+    }
+    const toVerify = recs.filter((r) => r.needsVerify || (verify && r.section !== "skills"));
+    let verdicts = null;
+    if (verify && toVerify.length) {
+      try { verdicts = await verify(toVerify.map((r, i) => ({ key: String(i), text: r.text, sources: r.sources }))); } catch (e) { verdicts = null; }
+    }
+    toVerify.forEach((r, i) => {
+      const v = verdicts && verdicts[String(i)];
+      if (v && !v.supported) { r.problems = [...r.problems, `AI kiểm chứng: ${v.issue || "không được nguồn hỗ trợ"}`]; r.drop = true; }
+      else if (!v && r.needsVerify) r.drop = true;
+      else if (v && r.needsVerify) r.problems = [];
+    });
+    for (const r of recs) { const c = { ...r }; delete c.needsVerify; delete c.drop; (r.drop ? report.dropped : report.kept).push(c); }
+    const kept = recs.filter((r) => !r.drop);
+    const final = { summary: kept.filter((r) => r.section === "summary").map((r) => r.text), skills: [], experience: [], education: [], other_sections: [] };
+    (plan.skills || []).forEach((g, gi) => {
+      const items = kept.filter((r) => r.label === `skills:${gi}:${g.group || ""}`).map((r) => r.text);
+      if (items.length) final.skills.push([g.group || "", items]);
+    });
+    for (const pe of plan.experience || []) {
+      const bl = kept.filter((r) => r.section === "experience" && r.entry === pe.id).map((r) => r.text);
+      if (bl.length && !final.experience.some((x) => x.id === pe.id)) final.experience.push({ id: pe.id, bullets: bl });
+    }
+    const eduIds = new Set((cv.education?.entries || []).map((e) => e.id));
+    for (const pe of plan.education || []) if (eduIds.has(pe.id)) final.education.push({ id: pe.id, details: (pe.details || []).filter((d) => idx[d]) });
+    for (const ps of plan.other_sections || []) {
+      const items = (ps.items || []).filter((i) => idx[i] && idx[i].section === ps.key);
+      if (items.length) final.other_sections.push({ key: ps.key, items });
+    }
+    final.section_order = plan.section_order || ["summary", "skills", "experience", "education"];
+    return { final, report };
+  }
+  function originalFinal(cv) {
+    return {
+      summary: (cv.summary?.sentences || []).map((s) => s.text),
+      skills: (cv.skills?.groups || []).map((g) => [g.name, g.items.map((i) => i.text)]),
+      experience: (cv.experience?.entries || []).map((e) => ({ id: e.id, bullets: e.bullets.map((b) => b.text) })),
+      education: (cv.education?.entries || []).map((e) => ({ id: e.id, details: e.details.map((d) => d.id) })),
+      other_sections: (cv.other || []).map((s) => ({ key: s.key, items: s.items.map((i) => i.id) })),
+      section_order: cv.section_order || [],
+    };
+  }
+  function buildModel(cv, final, extraLinks) {
+    final = final || originalFinal(cv);
+    const idx = C().sourceIndex(cv);
+    const titles = { summary: cv.summary?.title || "SUMMARY", skills: cv.skills?.title || "SKILLS", experience: cv.experience?.title || "WORK EXPERIENCE", education: cv.education?.title || "EDUCATION" };
+    const otherT = Object.fromEntries((cv.other || []).map((s) => [s.key, s.title]));
+    const exp = Object.fromEntries((cv.experience?.entries || []).map((e) => [e.id, e]));
+    const edu = Object.fromEntries((cv.education?.entries || []).map((e) => [e.id, e]));
+    const order = [...(final.section_order || [])];
+    (final.other_sections || []).forEach((s) => { if (!order.includes(s.key)) order.push(s.key); });
+    const sections = [];
+    for (const key of order) {
+      if (key === "summary" && final.summary.length) sections.push({ title: titles.summary, type: "paragraph", text: final.summary.join(" ") });
+      else if (key === "skills" && final.skills.length) sections.push({ title: titles.skills, type: "skills", groups: final.skills });
+      else if (key === "experience" && final.experience.length)
+        sections.push({ title: titles.experience, type: "entries", entries: final.experience.map((fe) => ({ title: exp[fe.id].title, org: exp[fe.id].org, dates: exp[fe.id].dates, bullets: fe.bullets })) });
+      else if (key === "education" && final.education.length)
+        sections.push({ title: titles.education, type: "entries", entries: final.education.map((fe) => ({ title: edu[fe.id].title, org: "", dates: edu[fe.id].dates, lines: fe.details.map((d) => idx[d].text) })) });
+      else { const s = (final.other_sections || []).find((x) => x.key === key); if (s) sections.push({ title: otherT[s.key] || s.key.toUpperCase(), type: "list", items: s.items.map((i) => idx[i].text) }); }
+    }
+    const c = cv.contact;
+    return { name: c.name, contact: [c.location, c.phone, c.email, ...(c.links || []), ...(extraLinks || [])].filter(Boolean), sections, doc_title: `CV ${c.name}` };
+  }
+  function modelWords(m) {
+    let n = 0;
+    for (const s of m.sections) {
+      if (s.type === "paragraph") n += s.text.split(/\s+/).length;
+      else if (s.type === "skills") n += s.groups.reduce((a, [nm, it]) => a + it.join(" ").split(/\s+/).length + nm.split(/\s+/).length, 0);
+      else if (s.type === "list") n += s.items.reduce((a, i) => a + i.split(/\s+/).length, 0);
+      else if (s.type === "entries") for (const e of s.entries) n += `${e.title} ${e.org || ""} ${e.dates || ""}`.split(/\s+/).filter(Boolean).length + [...(e.lines || []), ...(e.bullets || [])].reduce((a, x) => a + x.split(/\s+/).length, 0);
+    }
+    return n;
+  }
+  function trimOnce(final) {
+    for (const s of [...(final.other_sections || [])].reverse()) if (["extracurriculars", "awards", "projects", "publications"].includes(s.key) && s.items.length) {
+      const r = s.items.pop(); if (!s.items.length) final.other_sections.splice(final.other_sections.indexOf(s), 1); return `bỏ mục phụ ${r}`;
+    }
+    for (const fe of [...final.experience].reverse()) if (fe.bullets.length > 2) { fe.bullets.pop(); return `bớt 1 bullet ở ${fe.id}`; }
+    for (const fe of final.education) if (fe.details.length > 1) return `bỏ chi tiết học vấn ${fe.details.pop()}`;
+    for (const fe of [...final.experience].reverse()) if (fe.bullets.length > 1) { fe.bullets.pop(); return `bớt 1 bullet ở ${fe.id}`; }
+    return null;
+  }
+
+  // ================================================================ cover letter
+  function tzSentence(tz, avail) {
+    const a = String(avail || "08:00-23:00").replace(/[–—]/, " to ").replace("-", " to ");
+    tz = tz || {};
+    let win = "";
+    for (const d of tz.details || []) if (d.hours_ict) { win = d.hours_ict.split(" (")[0].replace(" ICT", ""); break; }
+    if (!win && tz.hours_ict) win = tz.hours_ict.split(" (")[0].replace(" ICT", "");
+    win = win.replace(/–/g, " to ");
+    const lab = tz.label || "";
+    if (tz.verdict === "ok" && lab.startsWith("Overlap") && win) return `I'm based in Vietnam (UTC+7) and can reliably cover ${win} ICT each working day for overlap with your team, then handle the rest asynchronously.`;
+    if (tz.verdict === "ok" && win) return `I'm based in Vietnam (UTC+7). Your working hours fall at ${win} ICT on my side, which fits my normal working day (${a} ICT).`;
+    if (tz.verdict === "ok" && lab.includes("UTC+7")) return "I'm based in Vietnam (UTC+7), so I share your team's time zone and working day.";
+    if (tz.verdict === "ok") return `I'm based in Vietnam (UTC+7). I work well asynchronously and can be online ${a} ICT for meetings and real-time work.`;
+    return `I'm based in Vietnam (UTC+7) and can be online ${a} ICT. I'm happy to set my schedule to cover your team's core overlap hours.`;
+  }
+  const bodyWords = (ps) => ps.reduce((a, p) => a + p.split(/\s+/).filter(Boolean).length, 0);
+  function checkLetter(paragraphs, cv, job, missing, years) {
+    const idx = C().sourceIndex(cv);
+    const cvText = Object.values(idx).map((v) => v.text).join("\n");
+    const text = paragraphs.join("\n");
+    const problems = [];
+    const scrub = text.replace(/\b\d{1,2}[:.]\d{2}\b|UTC\s?[+-]\s?\d+|GMT\s?[+-]\s?\d+|\b(?:19|20)\d{2}\b/g, " ");
+    const allowed = T().numbers(cvText);
+    if (years != null) { allowed.add(String(Math.floor(years))); allowed.add(String(Math.round(years))); allowed.add(String(years)); }
+    for (const n of T().numbers(scrub)) if (!allowed.has(n)) problems.push(`số “${n}” không có trong CV`);
+    for (const term of T().TOOLS) if (T().present(term, text) && !T().present(term, cvText) && !new RegExp(`(?:learn|learning|ramp up)[^.]*\\b${term}\\b`, "i").test(text)) problems.push(`công cụ “${term}” không có trong CV`);
+    for (let m of missing || []) { m = String(m).trim(); if (m.length > 2 && m.length <= 30 && T().present(m, text) && !T().present(m, cvText)) problems.push(`nhắc kỹ năng còn thiếu “${m}” như thể đã có`); }
+    for (const rx of T().CLAIMS) { const mm = text.match(rx); if (mm && !rx.test(cvText)) problems.push(`khẳng định không có trong CV: “${mm[0]}”`); }
+    if (!/UTC\s?\+\s?7|ICT|Vietnam|Việt Nam/.test(text)) problems.push("chưa nêu Việt Nam / UTC+7");
+    const n = bodyWords(paragraphs);
+    if (n < 250 || n > 350) problems.push(`độ dài ${n} từ (cần 250–350)`);
+    problems.push(...styleProblems(text));
+    return problems;
+  }
+  function templateLetter(job, cv, final, tz, avail) {
+    const w = jdWeights(job);
+    const ents = Object.fromEntries((cv.experience?.entries || []).map((e) => [e.id, e]));
+    const cands = [];
+    for (const fe of final.experience || []) for (const b of fe.bullets) cands.push([relevance(b, w) + (/\d/.test(b) ? 0.5 : 0), b, ents[fe.id]]);
+    cands.sort((a, b) => b[0] - a[0]);
+    const themes = [...new Set((final.skills || []).flatMap((g) => g[1]).filter((it) => relevance(it, w) > 1).map((it) => it.replace(/\s*\(.*?\)/g, "").toLowerCase()))].slice(0, 3);
+    const themeTxt = themes.length > 1 ? themes.slice(0, -1).join(", ") + " and " + themes[themes.length - 1] : themes[0] || "this kind of work";
+    const cur = (cv.experience?.entries || [])[0];
+    let degree = "";
+    for (const e of cv.education?.entries || []) { const d = e.details.find((d) => /\b(?:bachelor|master|degree|b\.?sc|m\.?sc|mba|phd)\b/i.test(d.text)); if (d) { degree = d.text; break; } }
+    const art = (t) => (/^[aeiou]/i.test(t) ? "an" : "a");
+    let p1 = `I'd like to apply for the ${job.title} role at ${job.company}. The work centres on ${themeTxt}`;
+    p1 += cur ? `, which is what I do every day as ${art(cur.title)} ${cur.title} at ${cur.org}.` : ".";
+    if (degree) p1 += ` My ${degree} taught me to work in a structured, careful way, and I like turning raw information into findings that people can act on.`;
+    const build = (picked) => {
+      const by = new Map();
+      for (const [, b, e] of picked) { if (!by.has(e.id)) by.set(e.id, []); by.get(e.id).push([b, e]); }
+      const parts = [];
+      let prevN = 0;
+      for (const items of by.values()) {
+        const e = items[0][1];
+        const lead = e === cur ? `At ${e.org}, where I work as ${art(e.title)} ${e.title},` : `${["Before that", "Earlier", "Also earlier"][Math.min(prevN++, 2)]}, as ${art(e.title)} ${e.title} at ${e.org},`;
+        parts.push(items.map(([b], k) => { const v = b.replace(/\.$/, ""); const s = v[0].toLowerCase() + v.slice(1); return k === 0 ? `${lead} I ${s}.` : k === 1 ? `I also ${s}.` : `On the same team, I ${s}.`; }).join(" "));
+      }
+      return [parts[0] || "", parts.slice(1).join(" ")];
+    };
+    const picked = cands.slice(0, 2);
+    const other = cands.slice(2).find((c) => !picked.some((p) => p[2].id === c[2].id));
+    picked.push(...(other ? [other] : cands.slice(2, 3)));
+    const rest = cands.filter((c) => !picked.includes(c));
+    let [p2, p3] = build(picked);
+    const english = (final.skills || []).flatMap((g) => g[1]).find((i) => /english/i.test(i));
+    const langP = english ? `I work in English every day at C1 level (VSTEP), so I can deal directly with clients and colleagues.` : "";
+    const pTz = tzSentence(tz, avail) + " I keep written updates clear and complete so work keeps moving between calls.";
+    const close = `I would welcome a short call to talk about how I could help ${job.company}. Thank you for your time.`;
+    const assemble = () => [p1, p2, p3, langP].filter(Boolean).concat([pTz, close]);
+    let paras = assemble();
+    while (bodyWords(paras) < 250 && rest.length) {
+      picked.push(rest.shift());
+      [p2, p3] = build(picked);
+      const cand = assemble();
+      if (bodyWords(cand) > 350) { picked.pop(); [p2, p3] = build(picked); break; }
+      paras = cand;
+    }
+    paras = assemble().map(sanitizeDashes);
+    return { language: "English", greeting: `Dear ${job.company} Hiring Team,`, paragraphs: paras, closing: "Kind regards,", method: "template" };
+  }
+  function detectLanguage(text) {
+    const SW = { English: "the and to of in for with you we our is are will", German: "und der die das mit für wir sie ist sind ein eine nicht", French: "et le la les des pour avec vous nous est sont une dans",
+      Spanish: "y el la los las para con usted es son una en", Vietnamese: "và của các cho với là được trong những một", Portuguese: "e o a os as para com você é são uma em" };
+    const words = String(text || "").toLowerCase().match(/[a-zà-ỹäöüßéèêç]+/g) || [];
+    let best = "English", bestN = -1;
+    for (const [l, sw] of Object.entries(SW)) { const set = new Set(sw.split(" ")); const n = words.filter((x) => set.has(x)).length; if (n > bestN) { best = l; bestN = n; } }
+    return best;
+  }
+
+  // ================================================================ search links (no scraping: these open in your browser)
+  function searchLinks(keyword, opts) {
+    const q = encodeURIComponent(keyword || "");
+    const days = (opts && opts.days) || 7;
+    return [
+      { site: "LinkedIn", note: "Remote, đăng trong 7 ngày", url: `https://www.linkedin.com/jobs/search/?keywords=${q}&f_WT=2&f_TPR=r${days * 86400}&sortBy=DD` },
+      { site: "LinkedIn (Việt Nam)", note: "Remote, đặt tại Việt Nam", url: `https://www.linkedin.com/jobs/search/?keywords=${q}&location=Vietnam&f_WT=2&sortBy=DD` },
+      { site: "Upwork", note: "Việc freelance, mới nhất", url: `https://www.upwork.com/nx/search/jobs/?q=${q}&sort=recency` },
+      { site: "VietnamWorks", note: "Việc làm tại VN", url: `https://www.vietnamworks.com/viec-lam?q=${q}` },
+      { site: "TopCV", note: "Việc làm tại VN", url: `https://www.topcv.vn/tim-viec-lam-${encodeURIComponent(String(keyword || "").toLowerCase().replace(/\s+/g, "-"))}` },
+      { site: "ITviec", note: "Ngành IT tại VN", url: `https://itviec.com/it-jobs/${encodeURIComponent(String(keyword || "").toLowerCase().replace(/\s+/g, "-"))}` },
+      { site: "Indeed", note: "Remote", url: `https://www.indeed.com/jobs?q=${q}&l=Remote&fromage=${days}` },
+      { site: "Glassdoor", note: "Remote", url: `https://www.glassdoor.com/Job/remote-${encodeURIComponent(String(keyword || "").toLowerCase().replace(/\s+/g, "-"))}-jobs-SRCH_IL.0,6_IS11047_KO7,${7 + String(keyword || "").length}.htm` },
+      { site: "Wellfound", note: "Startup, remote", url: `https://wellfound.com/role/r/${encodeURIComponent(String(keyword || "").toLowerCase().replace(/\s+/g, "-"))}` },
+      { site: "Himalayas", note: "Có lọc múi giờ", url: `https://himalayas.app/jobs?q=${q}` },
+      { site: "We Work Remotely", note: "Remote", url: `https://weworkremotely.com/remote-jobs/search?term=${q}` },
+      { site: "Remote OK", note: "Remote", url: `https://remoteok.com/remote-${encodeURIComponent(String(keyword || "").toLowerCase().replace(/\s+/g, "-"))}-jobs` },
+      { site: "Jobicy", note: "Remote, lọc APAC", url: `https://jobicy.com/?search_keywords=${q}&search_region=apac` },
+      { site: "Working Nomads", note: "Remote", url: `https://www.workingnomads.com/jobs?tag=${q}` },
+      { site: "Remotive", note: "Remote", url: `https://remotive.com/remote-jobs?query=${q}` },
+    ];
+  }
+
+  // ================================================================ pasted job (no AI)
+  function guessJob(text, url, company, title) {
+    const lines = String(text).split(/\n/).map((l) => l.trim()).filter(Boolean);
+    let t = title, c = company;
+    if (!t && lines[0]) { const m = lines[0].match(/^(.+?)\s*[:|@–—-]\s*(.+)$/); if (m && m[1].length < 60 && m[2].length < 120) { c = c || m[1]; t = m[2]; } else t = lines[0].slice(0, 120); }
+    if (!c) { const m = String(text).match(/\b(?:at|@|company:|công ty:?)\s+([A-Z][\w.&' -]{1,40})/); if (m) c = m[1].trim(); }
+    if (!c && url) { try { c = new URL(url).hostname.replace(/^www\./, "").split(".")[0]; } catch (e) { /* bad url */ } }
+    const locs = [];
+    const lm = String(text).match(/(?:location|region|địa điểm|khu vực)\s*[:：]\s*([^\n]{2,80})/i);
+    if (lm) locs.push(...lm[1].split(/[,;/|]/).map((s) => s.trim()).filter(Boolean));
+    if (/anywhere in the world|worldwide/i.test(text) && !locs.length) locs.push("Worldwide");
+    return { company: c || "", title: t || "", description: String(text).trim(), locations: locs, remote_type: JT.elig.remoteType(t, locs.join(" "), text, "unknown") };
+  }
+
+  JT.core = { P, AI_PHRASES, styleProblems, sanitizeDashes, heuristicProfile, allTitles, titleMatches, heuristicScore, hardFilter, heuristicPlan, tracePlan,
+    originalFinal, buildModel, modelWords, trimOnce, tzSentence, checkLetter, templateLetter, bodyWords, detectLanguage, searchLinks, guessJob, shortTerms };
+})(globalThis.JT = globalThis.JT || {});
+
+</script>
+<script>
+/* Platform layer: AI (Claude in claude.ai via `sample`, or Anthropic API key when opened as a file),
+   storage (private per-user db in claude.ai, else localStorage), downloads, lazy CDN libraries. */
+(function (JT) {
+  "use strict";
+  const LS = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+  };
+  JT.LS = LS;
+  const inClaude = () => !!(globalThis.window && window.claude && typeof window.claude.use === "function");
+
+  // ------------------------------------------------------------------ AI
+  const ai = {
+    mode: "none", sample: null, model: "claude-sonnet-5-5", blocked: false,
+    async init() {
+      if (inClaude()) {
+        try { this.sample = await window.claude.use("sample"); } catch (e) { this.sample = null; }
+        if (this.sample) { this.mode = "claude"; return; }
+      }
+      const key = LS.get("jt.apikey", "");
+      this.mode = key ? "api" : "none";
+      this.model = LS.get("jt.model", this.model);
+    },
+    get available() { return this.mode !== "none" && !this.blocked; },
+    label() {
+      if (this.blocked) return "AI bị từ chối quyền — đang dùng chế độ cơ bản";
+      return { claude: "AI: tài khoản Claude của bạn", api: "AI: API key của bạn", none: "Chế độ cơ bản (chưa có AI)" }[this.mode];
+    },
+    setKey(k) { LS.set("jt.apikey", (k || "").trim()); this.mode = (k || "").trim() ? "api" : (this.sample ? "claude" : "none"); },
+    async json(prompt, opts = {}) {
+      if (this.mode === "claude") {
+        try { return await this.sample.json(prompt, { modelTier: opts.tier || "default", cache: opts.cache === false ? false : undefined }); }
+        catch (e) {
+          if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].includes(e && e.code)) this.blocked = true;
+          throw new Error(aiErrorText(e));
+        }
+      }
+      if (this.mode === "api") return apiJson(prompt, this.model);
+      throw new Error("Chưa có AI");
+    },
+  };
+  function aiErrorText(e) {
+    const c = e && e.code;
+    return ({ not_granted: "Bạn chưa cho phép trang dùng Claude.", rate_limited: "Đang gửi quá nhiều yêu cầu hoặc đã chạm giới hạn sử dụng. Thử lại sau ít phút.",
+      invalid_json: "AI trả kết quả không đọc được. Bấm thử lại.", prompt_too_large: "Nội dung quá dài. Rút gọn JD rồi thử lại.",
+      session_expired: "Phiên đăng nhập hết hạn. Tải lại trang.", refused: "AI từ chối yêu cầu này.", upstream_error: "Lỗi kết nối tạm thời. Bấm thử lại." }[c])
+      || (e && e.message) || "Lỗi AI";
+  }
+  function extractJson(t) {
+    t = String(t).trim();
+    const f = t.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (f) t = f[1].trim();
+    try { return JSON.parse(t); } catch (e) { /* fall through */ }
+    const s = Math.min(...[t.indexOf("{"), t.indexOf("[")].filter((i) => i >= 0));
+    const e2 = Math.max(t.lastIndexOf("}"), t.lastIndexOf("]"));
+    if (isFinite(s) && e2 > s) return JSON.parse(t.slice(s, e2 + 1));
+    throw new Error("AI trả kết quả không đọc được.");
+  }
+  async function apiJson(prompt, model) {
+    const key = LS.get("jt.apikey", "");
+    let last;
+    for (let i = 0; i < 4; i++) {
+      const r = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+        body: JSON.stringify({ model, max_tokens: 8000, messages: [{ role: "user", content: prompt + "\n\nReply with ONE valid JSON value only." }] }),
+      }).catch((e) => ({ ok: false, status: 0, text: async () => String(e) }));
+      if (r.ok) { const d = await r.json(); return extractJson((d.content || []).map((b) => b.text || "").join("")); }
+      last = `${r.status} ${(await r.text()).slice(0, 200)}`;
+      if (![0, 429, 500, 502, 503, 529].includes(r.status)) break;
+      await new Promise((res) => setTimeout(res, 1500 * 2 ** i + Math.random() * 500));
+    }
+    throw new Error(/401/.test(last) ? "API key không hợp lệ." : `Gọi Claude API lỗi: ${last}`);
+  }
+  JT.ai = ai;
+
+  // ------------------------------------------------------------------ storage
+  const store = {
+    kind: "local", db: null, uid: null,
+    async init() {
+      if (inClaude()) {
+        try {
+          const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+          const uid = user ? await user.id() : null;
+          if (db && uid) { this.db = db; this.uid = uid; this.kind = "db"; return; }
+        } catch (e) { /* fall back */ }
+      }
+      this.kind = "local";
+    },
+    label() { return this.kind === "db" ? "Dữ liệu lưu riêng tư trong tài khoản Claude của bạn" : "Dữ liệu lưu trong trình duyệt này"; },
+    pdoc() { return this.db.doc(`data/users/${this.uid}/profile`); },
+    async loadProfile() {
+      if (this.kind === "db") { const s = await this.pdoc().get(); return s.exists ? s.data() : null; }
+      return LS.get("jt.profile", null);
+    },
+    async saveProfile(p) {
+      if (this.kind === "db") return this.pdoc().set(JSON.parse(JSON.stringify(p)));
+      if (!LS.set("jt.profile", p)) throw new Error("Không lưu được vào trình duyệt (bộ nhớ đầy hoặc bị chặn).");
+    },
+    async listJobs() {
+      if (this.kind === "db") { const q = await this.pdoc().collection("jobs").get(); return q.docs.map((d) => d.data()); }
+      return Object.values(LS.get("jt.jobs", {}));
+    },
+    async saveJob(job) {
+      const clean = JSON.parse(JSON.stringify(job));
+      if (this.kind === "db") return this.pdoc().collection("jobs").doc(job.id).set(clean);
+      const all = LS.get("jt.jobs", {});
+      all[job.id] = clean;
+      if (!LS.set("jt.jobs", all)) throw new Error("Không lưu được vào trình duyệt (bộ nhớ đầy). Xoá bớt job cũ.");
+    },
+    async deleteJob(id) {
+      if (this.kind === "db") return this.pdoc().collection("jobs").doc(id).delete();
+      const all = LS.get("jt.jobs", {}); delete all[id]; LS.set("jt.jobs", all);
+    },
+  };
+  JT.store = store;
+
+  // ------------------------------------------------------------------ downloads
+  let dl = null;
+  JT.download = async function (filename, blob) {
+    if (inClaude()) {
+      if (dl === null) dl = (await window.claude.use("downloads")) || false;
+      if (dl) {
+        try { await dl.save({ filename, data: blob }); return "saved"; }
+        catch (e) { if (e && e.code === "declined") return "declined"; throw new Error("Không tải được file: " + ((e && e.message) || e)); }
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return "saved";
+  };
+
+  // ------------------------------------------------------------------ lazy libraries (jsDelivr, pinned)
+  const LIBS = {
+    pdfjs: ["https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js", "https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js"],
+    mammoth: ["https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"],
+    jspdf: ["https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"],
+    docx: ["https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"],
+  };
+  const loaded = {};
+  function script(src) {
+    return new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("Không tải được thư viện: " + src)); document.head.appendChild(s); });
+  }
+  JT.lib = async function (name) {
+    if (!loaded[name]) loaded[name] = (async () => { for (const s of LIBS[name]) await script(s); })();
+    await loaded[name];
+    if (name === "pdfjs") { const p = window.pdfjsLib; p.GlobalWorkerOptions.workerSrc = LIBS.pdfjs[1]; return p; }
+    return { mammoth: window.mammoth, jspdf: window.jspdf, docx: window.docx }[name];
+  };
+  JT.inClaude = inClaude;
+})(globalThis.JT = globalThis.JT || {});
+
+</script>
+<script>
+/* Review page: reads the private GitHub repo written by GitHub Actions, lets the user edit and approve,
+   and writes decisions back (state/decisions/*.json). Approving triggers the apply workflow. */
+(function (JT) {
+  "use strict";
+  const $ = (s) => document.querySelector(s);
+  const H = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const core = JT.core;
+  const S = { gh: JT.LS.get("jt.gh", null), view: "pending", jobId: null, queue: null, history: null, cv: null, profile: null, edits: JT.LS.get("jt.edits", {}),
+    runs: null, busy: {}, confirm: null, cfgText: null, kwText: null };
+  const METHOD = { email: "Tự gửi email", greenhouse: "Tự nộp form Greenhouse", lever: "Tự nộp form Lever", ashby: "Tự nộp form Ashby", manual: "Bạn nộp tay" };
+  const STATUS = { approved: "Đã duyệt", applied: "Đã nộp", interview: "Phỏng vấn", rejected: "Bị từ chối", offer: "Offer", skipped: "Bỏ qua" };
+  const RES = { submitted: ["res-ok", "Đã nộp"], needs_manual: ["res-man", "Cần nộp tay"], failed: ["res-bad", "Lỗi"], skipped: ["", "Bỏ qua"], deferred: ["res-man", "Để ngày mai"] };
+  function toast(m, ms = 3000) { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), ms); }
+  const saveEdits = () => JT.LS.set("jt.edits", S.edits);
+
+  // ============================================================ GitHub API
+  const gh = {
+    url(path) { return `https://api.github.com/repos/${S.gh.owner}/${S.gh.repo}/${path}`; },
+    hdr(raw) { return { Authorization: `Bearer ${S.gh.token}`, Accept: raw ? "application/vnd.github.raw+json" : "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28" }; },
+    async req(path, opt = {}, raw = false) {
+      const r = await fetch(this.url(path), { ...opt, headers: { ...this.hdr(raw), ...(opt.headers || {}) } });
+      if (r.status === 401) throw new Error("Token không hợp lệ hoặc đã hết hạn.");
+      if (r.status === 403) throw new Error("Token không có quyền (cần Contents: Read and write, Actions: Read and write).");
+      return r;
+    },
+    async text(path) {
+      const r = await this.req(`contents/${path}?ref=${S.gh.branch}`, {}, true);
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error(`Đọc ${path} lỗi ${r.status}`);
+      return r.text();
+    },
+    async json(path) { const t = await this.text(path); return t == null ? null : JSON.parse(t); },
+    async blob(path) { const r = await this.req(`contents/${path}?ref=${S.gh.branch}`, {}, true); if (!r.ok) throw new Error(`Tải ${path} lỗi ${r.status}`); return r.blob(); },
+    async put(path, text, message) {
+      let sha;
+      const m = await this.req(`contents/${path}?ref=${S.gh.branch}`);
+      if (m.ok) sha = (await m.json()).sha;
+      const content = btoa(unescape(encodeURIComponent(text)));
+      const r = await this.req(`contents/${path}`, { method: "PUT", body: JSON.stringify({ message, content, branch: S.gh.branch, ...(sha ? { sha } : {}) }) });
+      if (!r.ok) throw new Error(`Ghi ${path} lỗi ${r.status}: ${(await r.text()).slice(0, 160)}`);
+    },
+    async runs() { const r = await this.req("actions/runs?per_page=6"); return r.ok ? (await r.json()).workflow_runs : null; },
+    async dispatch(wf) { const r = await this.req(`actions/workflows/${wf}/dispatches`, { method: "POST", body: JSON.stringify({ ref: S.gh.branch }) }); if (r.status !== 204) throw new Error(`Không chạy được ${wf} (${r.status})`); },
+  };
+
+  async function load() {
+    S.busy.load = true; render();
+    try {
+      const [queue, history, prof] = await Promise.all([gh.json("state/queue.json"), gh.json("state/history.json"), gh.json("profile.json")]);
+      S.queue = queue || { jobs: [] }; S.history = history || { items: [], counts: {} }; S.profile = prof || {};
+      S.cv = await gh.json(S.queue.cv || "data/cv.json");
+      S.runs = await gh.runs().catch(() => null);
+      S.err = null;
+    } catch (e) { S.err = e.message; }
+    S.busy.load = false; render();
+  }
+
+  // ============================================================ render
+  function render() {
+    document.querySelectorAll("#tabs .tab").forEach((b) => b.setAttribute("aria-current", b.dataset.view === (S.view === "job" ? "pending" : S.view) ? "page" : "false"));
+    $("#tabs").hidden = !S.gh;
+    const n = S.queue ? S.queue.jobs.length : 0;
+    $("#status").innerHTML = S.gh ? `<span class="chip"><span class="dot on"></span>${H(S.gh.owner)}/${H(S.gh.repo)}</span>${S.queue ? `<span class="chip">${n} chờ duyệt</span>` : ""}` : "";
+    if (!S.gh) { $("#main").innerHTML = viewConnect(); return; }
+    if (S.busy.load && !S.queue) { $("#main").innerHTML = `<div class="busy"><div class="spin"></div>Đang đọc dữ liệu từ GitHub…</div>`; return; }
+    if (S.err) { $("#main").innerHTML = `<div class="stack"><div class="note bad">${H(S.err)}</div><div class="row"><button class="btn" data-act="reload">Thử lại</button><button class="btn ghost" data-act="disconnect">Đổi repo / token</button></div></div>`; return; }
+    $("#main").innerHTML = ({ pending: viewPending, job: viewJob, history: viewHistory, settings: viewSettings }[S.view] || viewPending)();
+  }
+
+  function viewConnect() {
+    return `<section class="panel stack" style="max-width:640px"><h2>Kết nối với repo của bạn</h2>
+      <p class="muted lead small">Trang này không chứa dữ liệu. Nó đọc job, CV và cover letter từ repo GitHub riêng tư của bạn, và ghi lại quyết định Duyệt / Bỏ qua. Token chỉ lưu trong trình duyệt này.</p>
+      <div class="fields"><label class="f">Tài khoản GitHub (owner)<input type="text" id="g-owner" placeholder="vd: nnanh"></label>
+      <label class="f">Tên repo<input type="text" id="g-repo" placeholder="vd: jobtool"></label><label class="f">Nhánh<input type="text" id="g-branch" value="main"></label></div>
+      <label class="f">Fine-grained token<input type="password" id="g-token" placeholder="github_pat_…"></label>
+      <div><button class="btn primary" data-act="connect">Kết nối</button></div></section>`;
+  }
+  const ribbon = (tz) => {
+    const W = 480, x = (m) => (m / 1440) * W;
+    let wins = "";
+    const m = String((tz && (tz.hours_ict || tz.label)) || "").match(/(\d{2}):(\d{2})–(\d{2}):(\d{2})/);
+    if (m && tz) { const s = +m[1] * 60 + +m[2]; let e = +m[3] * 60 + +m[4]; if (e === 0) e = 1440;
+      wins = (e > s ? [[s, e]] : [[s, 1440], [0, e]]).map(([a, b]) => `<rect class="rb-win ${tz.verdict}" x="${x(a)}" y="5" width="${Math.max(1, x(b) - x(a))}" height="8" rx="3"/>`).join(""); }
+    return `<svg class="ribbon" viewBox="0 0 ${W} 18" preserveAspectRatio="none" role="img" aria-label="Giờ làm ICT: ${H(tz ? tz.label : "")}"><rect class="rb-track" x="0" y="2" width="${W}" height="14" rx="4"/><rect class="rb-night" x="0" y="2" width="${x(420)}" height="14" rx="4"/>${wins}${[6, 12, 18].map((h) => `<line class="rb-tick" x1="${x(h * 60)}" x2="${x(h * 60)}" y1="2" y2="16"/>`).join("")}</svg>`;
+  };
+  const pill = (v) => (v ? `<span class="pill ${v}">${{ ok: "✓ Phù hợp", verify: "? Cần xác minh", reject: "✕ Loại" }[v]}</span>` : "");
+
+  function viewPending() {
+    const jobs = S.queue.jobs;
+    const runs = runsHtml();
+    if (!jobs.length) return `<div class="stack"><div class="empty"><b>Không có job nào chờ duyệt</b><span>GitHub tự quét mỗi sáng lúc khoảng 06:40 và gửi email khi có job mới.</span>
+      <button class="btn" data-act="dispatch" data-wf="daily.yml" ${S.busy.dispatch ? "disabled" : ""}>Quét ngay</button></div>${runs}</div>`;
+    return `<div class="stack"><div class="row" style="justify-content:space-between"><h2>Chờ duyệt (${jobs.length})</h2><div class="row"><button class="btn ghost" data-act="reload">Làm mới</button><button class="btn" data-act="dispatch" data-wf="daily.yml" ${S.busy.dispatch ? "disabled" : ""}>Quét ngay</button></div></div>
+      <div class="jobs">${jobs.map((j) => {
+        const sc = j.score;
+        return `<button class="job" data-act="open" data-id="${H(j.id)}"><div class="score ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc ?? "–"}</div>
+          <div class="job-main"><div class="job-title">${H(j.title)} <span class="muted" style="font-weight:400">· ${H(j.company)}</span></div>
+          <div class="job-meta">${pill(j.tz && j.tz.verdict)}<span class="mono small">${H(j.tz ? j.tz.label : "")}</span><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span>
+          ${S.edits[j.id] ? `<span class="pill st">Có chỉnh sửa chưa gửi</span>` : ""}</div>${ribbon(j.tz)}</div></button>`;
+      }).join("")}</div>${runs}</div>`;
+  }
+  function runsHtml() {
+    if (!S.runs) return "";
+    const st = (r) => (r.status !== "completed" ? "đang chạy" : r.conclusion === "success" ? "xong" : r.conclusion === "failure" ? "lỗi" : r.conclusion);
+    return `<section class="panel"><h3>Lần chạy gần đây trên GitHub</h3><div class="runs">${S.runs.map((r) => `<div><span class="mono">${H(new Date(r.created_at).toLocaleString("vi-VN"))}</span> · ${H(r.name)} · <b>${H(st(r))}</b> · <a href="${H(r.html_url)}" target="_blank" rel="noopener">xem log ↗</a></div>`).join("")}</div></section>`;
+  }
+
+  // ------------------------------------------------------------ job detail
+  function ed(j) {
+    if (!S.edits[j.id]) {
+      const fv = {};
+      for (const f of (j.form && j.form.fields) || []) if (["question", "consent", "eeo"].includes(f.kind)) fv[f.sel] = f.value;
+      S.edits[j.id] = { cover: JSON.parse(JSON.stringify(j.cover)), final: JSON.parse(JSON.stringify(j.cv.final)), email: j.email ? { ...j.email } : null, form_values: fv, touched: {} };
+    }
+    return S.edits[j.id];
+  }
+  const idxOf = () => JT.cv.sourceIndex(S.cv);
+  function bulletWarnings(j, entryId, text) {
+    const idx = idxOf();
+    const ctx = JT.trace.buildContext(idx, j.description || "", j.cv.missing || [], S.profile.years_experience);
+    const ids = entryId ? Object.keys(idx).filter((k) => idx[k].entry === entryId) : Object.keys(idx);
+    return JT.trace.checkItem(text, ids, ctx, entryId ? "experience" : "summary", entryId).problems.filter((p) => !JT.trace.isSoft(p));
+  }
+  function viewJob() {
+    const j = S.queue.jobs.find((x) => x.id === S.jobId);
+    if (!j) { S.view = "pending"; return viewPending(); }
+    const e = ed(j), tz = j.tz || {}, sc = j.score_detail || {};
+    const model = core.buildModel(S.cv, e.final);
+    const cvEdit = S.busy.cvEdit === j.id;
+    const ents = Object.fromEntries((S.cv.experience?.entries || []).map((x) => [x.id, x]));
+    const letterText = [e.cover.greeting, ...e.cover.paragraphs].join("\n\n");
+    const coverProblems = core.checkLetter(e.cover.paragraphs, S.cv, j, sc.missing || [], S.profile.years_experience);
+    const needs = j.form ? j.form.fields.filter((f) => f.kind === "question" && f.required && (!e.form_values[f.sel] || String(e.form_values[f.sel]).includes("[ĐIỀN TAY"))) : [];
+    return `<div class="stack">
+      <div><button class="btn ghost" data-act="back">← Danh sách</button></div>
+      <section class="panel stack"><div class="dhead"><div class="score ${j.score >= 70 ? "hi" : ""}">${j.score ?? "–"}</div><div class="t"><h2>${H(j.title)}</h2>
+        <div class="muted">${H(j.company)} · <a href="${H(j.url)}" target="_blank" rel="noopener">Tin gốc ↗</a></div></div><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method])}</span></div>
+        ${ribbon(tz)}<div class="row">${pill(tz.verdict)}<b class="mono small">${H(tz.label)}</b></div><div class="small">${H(tz.reason)}</div>
+        ${(tz.questions || []).length ? `<details><summary class="small">Câu nên hỏi nhà tuyển dụng về giờ làm</summary><ul class="plain small">${tz.questions.map((q) => `<li>${H(q)}</li>`).join("")}</ul></details>` : ""}
+        <p class="small" style="margin:0"><b>Độ phù hợp:</b> ${H(sc.reasoning)}</p>
+        ${(sc.red_flags || []).length ? `<div class="note warn small">${sc.red_flags.map(H).join(" · ")}</div>` : ""}
+        ${j.apply.last_reason ? `<div class="note bad small"><b>Lần duyệt trước chưa nộp được:</b> ${H(j.apply.last_reason)}. Trả lời các câu đó bên dưới rồi duyệt lại.</div>` : ""}
+        ${j.apply.method === "manual" ? `<div class="note small">Job này không nộp tự động được${j.apply.reason ? ` (${H(j.apply.reason)})` : ""}. Khi bạn duyệt, tool vẫn lưu hồ sơ và gửi bạn link + file để nộp tay.</div>` : ""}
+      </section>
+
+      <section class="panel stack"><div class="row" style="justify-content:space-between"><h3>CV gửi cho job này</h3>
+        <div class="row"><button class="btn" data-act="file" data-path="${H(j.files.cv_pdf)}">Tải PDF</button><button class="btn ghost" data-act="cv-edit" data-id="${H(j.id)}">${cvEdit ? "Xong sửa" : "Sửa nội dung CV"}</button></div></div>
+        ${cvEdit ? `<div class="stack">
+          <b class="small">Summary</b>${e.final.summary.map((s, i) => `<div class="bul"><textarea data-edit="sum" data-i="${i}">${H(s)}</textarea><button class="btn ghost danger" data-act="del-sum" data-i="${i}" aria-label="Xoá">✕</button></div>${warnHtml(bulletWarnings(j, null, s))}`).join("")}
+          ${e.final.experience.map((fe, k) => `<b class="small">${H(ents[fe.id].title)} · ${H(ents[fe.id].org)}</b>${fe.bullets.map((b, i) => `<div class="bul"><textarea data-edit="bul" data-k="${k}" data-i="${i}">${H(b)}</textarea><button class="btn ghost danger" data-act="del-bul" data-k="${k}" data-i="${i}" aria-label="Xoá">✕</button></div>${warnHtml(bulletWarnings(j, fe.id, b))}`).join("")}`).join("")}
+          <div class="note small">Bạn được sửa tự do. Dòng đỏ là chỗ có số liệu, công cụ hoặc khẳng định không có trong CV gốc của công việc đó: hãy chắc chắn trước khi duyệt.</div></div>`
+        : `<div class="cvprev">${cvPreview(model)}</div>`}
+        <details><summary class="small">Nguồn gốc từng câu (${j.cv.kept.length} giữ, ${j.cv.dropped.length} bị loại vì không truy được nguồn)</summary><div class="diff" style="margin-top:8px">
+          ${j.cv.dropped.map((d) => `<div class="dl drop"><div>${H(d.text)}</div><div class="src">${H(d.problems.join("; "))}</div></div>`).join("")}
+          ${j.cv.kept.filter((k) => k.section !== "skills").map((k) => `<div class="dl"><div>${H(k.text)}</div><div class="src">${k.sources.map((s) => `<span class="mono">[${H(s.id)}]</span> ${H(s.text)}`).join(" ")}</div></div>`).join("")}</div></details>
+      </section>
+
+      <section class="panel stack"><div class="row" style="justify-content:space-between"><h3>Cover letter</h3><button class="btn" data-act="file" data-path="${H(j.files.cover_pdf)}">Tải PDF</button></div>
+        <textarea id="cover-edit" style="min-height:320px">${H(letterText)}</textarea><div class="checks" id="cover-checks">${checksHtml(coverProblems, core.bodyWords(e.cover.paragraphs))}</div></section>
+
+      ${e.email ? `<section class="panel stack"><h3>Email ứng tuyển</h3><p class="muted small" style="margin:0">Gửi từ Gmail của bạn, đính kèm CV và cover letter (PDF). Bạn nhận một bản sao (BCC).</p>
+        <div class="fields"><label class="f">Gửi tới<input type="text" id="em-to" value="${H(e.email.to)}"></label><label class="f">Tiêu đề<input type="text" id="em-subject" value="${H(e.email.subject)}"></label></div>
+        <textarea id="em-body" style="min-height:220px">${H(e.email.body)}</textarea><div class="checks small" id="em-checks">${emailChecks(e.email.body)}</div></section>` : ""}
+
+      ${j.form ? formPanel(j, e) : ""}
+
+      <div class="sticky-actions">
+        ${needs.length ? `<span class="small" style="color:var(--bad)">Còn ${needs.length} câu bắt buộc chưa trả lời: tool sẽ dừng ở bước nộp và báo bạn.</span>` : `<span class="small muted">Duyệt xong, GitHub ${j.apply.method === "manual" ? "lưu hồ sơ và gửi bạn link" : "tự nộp trong 1–3 phút"}.</span>`}
+        <div class="row" style="margin-left:auto"><button class="btn" data-act="skip" data-id="${H(j.id)}" ${S.busy.decide ? "disabled" : ""}>Bỏ qua</button>
+        <button class="btn primary" data-act="approve" data-id="${H(j.id)}" ${S.busy.decide ? "disabled" : ""}>${S.confirm === j.id ? "Bấm lần nữa để xác nhận" : j.apply.method === "manual" ? "Duyệt" : "Duyệt & nộp"}</button></div>
+      </div>
+    </div>`;
+  }
+  const warnHtml = (ws) => (ws.length ? `<div class="warn-line">⚠ ${H(ws.join("; "))}</div>` : "");
+  function formPanel(j, e) {
+    const fs = j.form.fields;
+    const std = fs.filter((f) => f.kind.startsWith("std:") || f.kind === "resume" || f.kind === "cover");
+    const qs = fs.filter((f) => f.kind === "question"), cons = fs.filter((f) => f.kind === "consent"), eeo = fs.filter((f) => f.kind === "eeo");
+    const input = (f) => {
+      const v = e.form_values[f.sel] ?? "";
+      if ((f.options || []).length) return `<select data-fv="${H(f.sel)}"><option value=""></option>${f.options.map((o) => `<option ${o === v ? "selected" : ""}>${H(o)}</option>`).join("")}</select>${String(v).includes("[ĐIỀN TAY") ? `<div class="warn-line">${H(v)}</div>` : ""}`;
+      return `<textarea data-fv="${H(f.sel)}" style="min-height:${f.type === "textarea" ? 100 : 44}px">${H(String(v).includes("[ĐIỀN TAY") ? "" : v)}</textarea>${String(v).includes("[ĐIỀN TAY") ? `<div class="warn-line">${H(v)}</div>` : ""}`;
+    };
+    return `<section class="panel stack"><h3>Form ứng tuyển</h3>
+      ${j.form.captcha_on_load ? `<div class="note warn small">Form này có captcha: tool sẽ điền sẵn nhưng không vượt captcha, nên sẽ báo bạn nộp tay.</div>` : ""}
+      <div class="small muted">Tự điền: ${std.map((f) => `${H(f.label.replace(/\s*\*$/, ""))}${f.value ? `: <span class="mono">${H(f.value)}</span>` : ""}`).join(" · ")}</div>
+      ${qs.length ? `<b class="small">Câu hỏi (AI soạn nháp, bạn sửa nếu cần)</b>${qs.map((f) => { const v = e.form_values[f.sel]; const need = f.required && (!v || String(v).includes("[ĐIỀN TAY"));
+        return `<div class="qrow ${need ? "need" : ""}"><div class="lab">${H(f.label.replace(/\s*\*$/, ""))} ${f.required ? `<span class="req">*</span>` : ""}</div>${input(f)}</div>`; }).join("")}` : ""}
+      ${eeo.length ? `<b class="small">Câu hỏi khảo sát (không bắt buộc)</b>${eeo.map((f) => `<div class="qrow"><div class="lab">${H(f.label)}</div>${input(f)}</div>`).join("")}` : ""}
+      ${cons.map((f) => `<label class="row small"><input type="checkbox" data-fv="${H(f.sel)}" ${e.form_values[f.sel] ? "checked" : ""}> ${H(f.label)}</label>`).join("")}
+    </section>`;
+  }
+  function checksHtml(problems, words) {
+    const ok = (t) => `<div class="okc">✓ ${H(t)}</div>`, bad = (t) => `<div class="badc">✕ ${H(t)}</div>`;
+    const dash = problems.filter((p) => /dash|gạch/.test(p)), ai = problems.filter((p) => p.startsWith("cụm từ")), other = problems.filter((p) => !dash.includes(p) && !ai.includes(p) && !p.startsWith("độ dài"));
+    return [(words >= 250 && words <= 350 ? ok : bad)(`${words} từ (yêu cầu 250–350)`), dash.length ? bad("Có em dash, cần bỏ") : ok("Không có em dash"),
+      ai.length ? bad("Có từ dễ bị nhận là văn AI: " + ai.map((p) => p.replace(/^cụm từ /, "")).join(", ")) : ok("Không có từ ngữ kiểu AI"), ok("Không có dòng ngày tháng"), ...other.map(bad)].join("");
+  }
+  const emailChecks = (body) => { const p = core.styleProblems(body); return p.length ? `<div class="badc">✕ ${H(p.join(", "))}</div>` : `<div class="okc">✓ Không có em dash hay từ kiểu AI</div>`; };
+  function cvPreview(m) {
+    let h = `<div style="font-weight:700;font-size:1.1rem">${H(m.name)}</div><div class="muted small">${H(m.contact.join(" | "))}</div>`;
+    for (const s of m.sections) {
+      h += `<h4>${H(s.title)}</h4>`;
+      if (s.type === "paragraph") h += `<div>${H(s.text)}</div>`;
+      else if (s.type === "skills") h += s.groups.map(([n, it]) => `<div>${n ? `<b>${H(n)}:</b> ` : ""}${H(it.join(", "))}</div>`).join("");
+      else if (s.type === "list") h += `<ul>${s.items.map((i) => `<li>${H(i)}</li>`).join("")}</ul>`;
+      else h += s.entries.map((e) => `<div class="ent"><span>${H(e.title)}${e.org ? " | " + H(e.org) : ""}</span><span class="mono">${H(e.dates)}</span></div>${(e.lines || []).map((l) => `<div>${H(l)}</div>`).join("")}${(e.bullets || []).length ? `<ul>${e.bullets.map((b) => `<li>${H(b)}</li>`).join("")}</ul>` : ""}`).join("");
+    }
+    return h;
+  }
+
+  // ------------------------------------------------------------ history / settings
+  function viewHistory() {
+    const items = S.history.items || [];
+    const c = S.history.counts || {};
+    return `<div class="stack"><div class="row" style="justify-content:space-between"><h2>Lịch sử</h2><span class="chip">Hôm nay đã nộp <b class="mono">${S.history.applies_today ?? 0}/${S.history.limit ?? 10}</b></span></div>
+      <div class="funnel">${[["Đã nộp", c.applied || 0], ["Phỏng vấn", c.interview || 0], ["Offer", c.offer || 0], ["Bị từ chối", c.rejected || 0], ["Chờ nộp tay", c.approved || 0]].map(([l, n]) => `<div class="fn"><b>${n}</b><span>${l}</span></div>`).join("")}</div>
+      ${items.length ? `<div class="jobs">${items.map((it) => {
+        const r = it.result || {}, [cls, lab] = RES[r.status] || ["", ""];
+        const days = it.applied_at ? Math.floor((Date.now() - new Date(it.applied_at)) / 864e5) : null;
+        return `<div class="panel stack" style="padding:14px"><div class="row" style="justify-content:space-between"><div><b>${H(it.title)}</b> <span class="muted">· ${H(it.company)}</span></div><span class="pill st">${H(STATUS[it.status] || it.status)}</span></div>
+          ${r.status ? `<div class="small"><b class="${cls}">${H(lab)}</b> · ${H(r.reason)}</div>` : ""}
+          ${(r.warnings || []).length ? `<div class="warn-line">${H(r.warnings.join("; "))}</div>` : ""}
+          ${days != null && it.status === "applied" && days >= 7 ? `<div class="note warn small">Đã nộp ${days} ngày, nên gửi email follow-up.</div>` : ""}
+          <div class="row">${it.url ? `<a class="btn" href="${H(it.url)}" target="_blank" rel="noopener">Tin gốc ↗</a>` : ""}
+          ${r.files && r.files.cv_pdf ? `<button class="btn" data-act="file" data-path="${H(r.files.cv_pdf)}">CV</button><button class="btn" data-act="file" data-path="${H(r.files.cover_pdf)}">Cover</button>` : ""}
+          ${(r.screens || []).map((s, i) => `<button class="btn ghost" data-act="file" data-path="${H(s)}">Ảnh form ${i + 1}</button>`).join("")}</div>
+          ${["applied", "interview", "approved"].includes(it.status) ? `<div class="row">${[["interview", "Phỏng vấn"], ["offer", "Offer"], ["rejected", "Bị từ chối"]].concat(it.status === "approved" ? [["applied", "Tôi đã nộp tay"]] : [])
+            .map(([s, l]) => `<button class="btn ghost" data-act="setstatus" data-id="${H(it.id)}" data-s="${s}">${l}</button>`).join("")}</div>` : ""}</div>`;
+      }).join("")}</div>` : `<div class="empty">Chưa có đơn nào.</div>`}${runsHtml()}</div>`;
+  }
+  function viewSettings() {
+    return `<div class="stack"><section class="panel stack"><h3>Từ khoá tìm kiếm (keywords.yaml)</h3>
+      ${S.kwText == null ? `<button class="btn" data-act="load-kw">Mở để sửa</button>` : `<textarea id="kw-text" style="min-height:320px;font-family:var(--mono);font-size:.82rem">${H(S.kwText)}</textarea><div><button class="btn primary" data-act="save-kw">Lưu lên repo</button></div>`}</section>
+      <section class="panel stack"><h3>Cấu hình (config.yaml)</h3><p class="muted small" style="margin:0">Ngưỡng điểm, giờ sẵn sàng, giới hạn 10 đơn/ngày, link trang duyệt (automation.review_url)…</p>
+      ${S.cfgText == null ? `<button class="btn" data-act="load-cfg">Mở để sửa</button>` : `<textarea id="cfg-text" style="min-height:360px;font-family:var(--mono);font-size:.82rem">${H(S.cfgText)}</textarea><div><button class="btn primary" data-act="save-cfg">Lưu lên repo</button></div>`}</section>
+      <section class="panel stack"><h3>Kết nối</h3><div class="small">${H(S.gh.owner)}/${H(S.gh.repo)} · nhánh ${H(S.gh.branch)}</div><div><button class="btn danger" data-act="disconnect">Ngắt kết nối và xoá token khỏi trình duyệt này</button></div></section></div>`;
+  }
+
+  // ============================================================ actions
+  function decision(j, action) {
+    const e = ed(j);
+    const d = { id: j.id, action, decided_at: new Date().toISOString() };
+    if (action === "approve") {
+      if (e.touched.cover) d.cover = e.cover;
+      if (e.touched.final) d.final = e.final;
+      if (e.email) d.email = e.email;
+      if (j.form) d.form_values = e.form_values;
+    }
+    return d;
+  }
+  async function decide(j, action) {
+    S.busy.decide = true; render();
+    try {
+      await gh.put(`state/decisions/${j.id}.json`, JSON.stringify(decision(j, action), null, 1), `${action === "approve" ? "Duyệt" : "Bỏ qua"}: ${j.title} @ ${j.company}`);
+      S.queue.jobs = S.queue.jobs.filter((x) => x.id !== j.id);
+      delete S.edits[j.id]; saveEdits();
+      S.view = "pending"; S.confirm = null;
+      toast(action === "approve" ? "Đã duyệt. GitHub đang xử lý, bạn sẽ nhận email kết quả." : "Đã bỏ qua", 4500);
+      setTimeout(async () => { S.runs = await gh.runs().catch(() => S.runs); render(); }, 6000);
+    } catch (e) { toast(e.message, 6000); }
+    S.busy.decide = false; render();
+  }
+  document.addEventListener("click", async (ev) => {
+    const t = ev.target.closest("[data-view],[data-act]");
+    if (!t) return;
+    if (t.dataset.view) { S.view = t.dataset.view; S.confirm = null; render(); window.scrollTo(0, 0); return; }
+    const a = t.dataset.act, j = S.queue && S.queue.jobs.find((x) => x.id === (t.dataset.id || S.jobId));
+    if (a === "connect") {
+      const g = { owner: $("#g-owner").value.trim(), repo: $("#g-repo").value.trim(), branch: $("#g-branch").value.trim() || "main", token: $("#g-token").value.trim() };
+      if (!g.owner || !g.repo || !g.token) return toast("Điền đủ owner, repo và token");
+      S.gh = g; JT.LS.set("jt.gh", g); await load();
+    } else if (a === "disconnect") { S.gh = null; JT.LS.set("jt.gh", null); S.queue = null; render(); }
+    else if (a === "reload") { await load(); }
+    else if (a === "open") { S.view = "job"; S.jobId = t.dataset.id; S.confirm = null; render(); window.scrollTo(0, 0); }
+    else if (a === "back") { S.view = "pending"; render(); }
+    else if (a === "cv-edit") { S.busy.cvEdit = S.busy.cvEdit === j.id ? null : j.id; render(); }
+    else if (a === "del-sum" && j) { const e = ed(j); e.final.summary.splice(+t.dataset.i, 1); e.touched.final = true; saveEdits(); render(); }
+    else if (a === "del-bul" && j) { const e = ed(j); e.final.experience[+t.dataset.k].bullets.splice(+t.dataset.i, 1); e.touched.final = true; saveEdits(); render(); }
+    else if (a === "approve" && j) {
+      if (S.confirm !== j.id) { S.confirm = j.id; render(); return; }
+      await decide(j, "approve");
+    } else if (a === "skip" && j) { await decide(j, "skip"); }
+    else if (a === "file") {
+      try { const p = t.dataset.path; toast("Đang tải…"); const b = await gh.blob(p); await JT.download(p.split("/").pop(), b); } catch (e) { toast(e.message, 5000); }
+    } else if (a === "dispatch") {
+      S.busy.dispatch = true; render();
+      try { await gh.dispatch(t.dataset.wf); toast("Đã yêu cầu GitHub quét ngay. Khoảng 5–15 phút sau bấm Làm mới.", 5000); setTimeout(async () => { S.runs = await gh.runs().catch(() => S.runs); render(); }, 5000); }
+      catch (e) { toast(e.message, 6000); }
+      S.busy.dispatch = false; render();
+    } else if (a === "setstatus") {
+      try {
+        await gh.put(`state/decisions/${t.dataset.id}-status-${Date.now()}.json`, JSON.stringify({ id: t.dataset.id, action: "status", status: t.dataset.s, decided_at: new Date().toISOString() }), `Trạng thái: ${t.dataset.s}`);
+        const it = S.history.items.find((x) => x.id === t.dataset.id); if (it) it.status = t.dataset.s;
+        toast("Đã cập nhật"); render();
+      } catch (e) { toast(e.message, 5000); }
+    } else if (a === "load-kw") { try { S.kwText = (await gh.text("keywords.yaml")) || ""; render(); } catch (e) { toast(e.message); } }
+    else if (a === "save-kw") { try { await gh.put("keywords.yaml", $("#kw-text").value, "Sửa từ khoá"); toast("Đã lưu. Áp dụng từ lần quét tới."); } catch (e) { toast(e.message, 5000); } }
+    else if (a === "load-cfg") { try { S.cfgText = (await gh.text("config.yaml")) || ""; render(); } catch (e) { toast(e.message); } }
+    else if (a === "save-cfg") { try { await gh.put("config.yaml", $("#cfg-text").value, "Sửa cấu hình"); toast("Đã lưu cấu hình"); } catch (e) { toast(e.message, 5000); } }
+  });
+  document.addEventListener("input", (ev) => {
+    const j = S.queue && S.queue.jobs.find((x) => x.id === S.jobId);
+    if (!j) return;
+    const e = ed(j), el = ev.target;
+    if (el.id === "cover-edit") {
+      const blocks = el.value.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+      e.cover = { ...e.cover, greeting: blocks[0] || "", paragraphs: blocks.slice(1) }; e.touched.cover = true;
+      $("#cover-checks").innerHTML = checksHtml(core.checkLetter(e.cover.paragraphs, S.cv, j, (j.score_detail || {}).missing || [], S.profile.years_experience), core.bodyWords(e.cover.paragraphs));
+    } else if (el.id === "em-body" || el.id === "em-subject" || el.id === "em-to") {
+      e.email = { ...e.email, to: $("#em-to").value.trim(), subject: $("#em-subject").value, body: $("#em-body").value };
+      $("#em-checks").innerHTML = emailChecks(e.email.body);
+    } else if (el.dataset.fv) {
+      e.form_values[el.dataset.fv] = el.type === "checkbox" ? el.checked : el.value;
+    } else if (el.dataset.edit === "sum") { e.final.summary[+el.dataset.i] = el.value; e.touched.final = true; }
+    else if (el.dataset.edit === "bul") { e.final.experience[+el.dataset.k].bullets[+el.dataset.i] = el.value; e.touched.final = true; }
+    saveEdits();
+  });
+    function refreshNeeds() {
+    const j = S.queue && S.queue.jobs.find((x) => x.id === S.jobId);
+    if (!j || !j.form) return;
+    const e = ed(j);
+    let n = 0;
+    for (const f of j.form.fields.filter((x) => x.kind === "question")) {
+      const v = e.form_values[f.sel];
+      const need = f.required && (!v || String(v).includes("[ĐIỀN TAY"));
+      if (need) n++;
+      const el = document.querySelector(`[data-fv="${CSS.escape(f.sel)}"]`);
+      const row = el && el.closest(".qrow");
+      if (row) { row.classList.toggle("need", need); if (!need) row.querySelectorAll(".warn-line").forEach((w) => w.remove()); }
+    }
+    const span = document.querySelector(".sticky-actions > span");
+    if (span) {
+      span.className = "small" + (n ? "" : " muted");
+      span.style.color = n ? "var(--bad)" : "";
+      span.textContent = n ? `Còn ${n} câu bắt buộc chưa trả lời: tool sẽ dừng ở bước nộp và báo bạn.` : `Duyệt xong, GitHub ${j.apply.method === "manual" ? "lưu hồ sơ và gửi bạn link" : "tự nộp trong 1–3 phút"}.`;
+    }
+  }
+  document.addEventListener("change", (ev) => {
+    const t = ev.target;
+    if (!(t.dataset.fv || t.dataset.edit)) return;
+    t.dispatchEvent(new Event("input", { bubbles: true }));
+    if (t.dataset.fv) refreshNeeds();
+    else setTimeout(render, 0);  // CV bullet edited: re-check its warnings
+  });
+
+  render();
+  if (S.gh) load();
+})(globalThis.JT = globalThis.JT || {});
+
+</script>
+</body></html>
