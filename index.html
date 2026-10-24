@@ -110,6 +110,12 @@ textarea{min-height:120px;resize:vertical;line-height:1.5}
 .filters button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 
 /* links grid */
+.seg{display:flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);width:fit-content;max-width:100%}
+.seg-b{border:0;background:transparent;color:var(--ink);font:inherit;font-weight:600;padding:8px 14px;border-radius:7px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.seg-b[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg-n{font-weight:400;opacity:.8;font-size:.85em}
+.commute{font-size:12px;padding:2px 8px;border-radius:999px;background:var(--sunk);color:var(--muted)}
+.commute.near{background:var(--ok-soft);color:var(--ok)}
 .sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,190px),1fr));gap:8px}
 .site{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);border-radius:8px;padding:10px 12px;text-decoration:none;color:var(--ink);background:var(--surface)}
 .site:hover{border-color:var(--accent)}
@@ -705,7 +711,7 @@ ${items.map((it) => `### ${it.key}\nITEM: ${it.text}\nSOURCES:\n${it.sources.map
 
     cover: (job, tz, lang, hint, avail, final, idx, name, problems) => `Write a cover letter for a real candidate applying to a real remote job.
 Language: ${lang}. Length: 250-350 words in the body paragraphs (greeting and sign-off excluded).
-Structure in this order: 1) why THIS company and role, using concrete details from the JD (product, customers, problem the role solves), no generic praise; 2) two or three real achievements from the CV that best match, numbers exactly as in the CV, naming the employer; 3) location and hours: the candidate is based in Vietnam (UTC+7); state the overlap they can offer: ${hint}; 4) a short close (1-2 sentences).
+Structure in this order: 1) why THIS company and role, using concrete details from the JD (product, customers, problem the role solves), no generic praise; 2) two or three real achievements from the CV that best match, numbers exactly as in the CV, naming the employer; 3) location and hours: the candidate is based in Vietnam (UTC+7); state the overlap they can offer: ${hint} (if that sentence says they can work at the office in Hanoi, the job is onsite: say so and skip time zones); 4) a short close (1-2 sentences).
 Truthfulness: ONLY facts from the CV. Never add skills, tools, numbers, titles, remote/international experience or certifications the CV does not state.
 Style rules (strict): no date line; no em dashes or en dashes used as dashes (use commas or full stops; write time ranges like "15:00 to 19:00"); plain, specific, human wording; short sentences; no clichés or stock phrases. Never use any of these words/phrases: ${AI_PHRASES.join(", ")}.
 ${problems && problems.length ? "Your previous draft broke these rules, fix them: " + problems.join("; ") + "\n" : ""}Return ONLY JSON: {"language":"","greeting":"","paragraphs":["","","",""],"closing":""}
@@ -1015,6 +1021,7 @@ Question: ${q}`,
     if (!win && tz.hours_ict) win = tz.hours_ict.split(" (")[0].replace(" ICT", "");
     win = win.replace(/–/g, " to ");
     const lab = tz.label || "";
+    if (tz.method === "onsite") return "I live in Hanoi, Vietnam and can work full-time at your office.";
     if (tz.verdict === "ok" && lab.startsWith("Overlap") && win) return `I'm based in Vietnam (UTC+7) and can reliably cover ${win} ICT each working day for overlap with your team, then handle the rest asynchronously.`;
     if (tz.verdict === "ok" && win) return `I'm based in Vietnam (UTC+7). Your working hours fall at ${win} ICT on my side, which fits my normal working day (${a} ICT).`;
     if (tz.verdict === "ok" && lab.includes("UTC+7")) return "I'm based in Vietnam (UTC+7), so I share your team's time zone and working day.";
@@ -1034,7 +1041,7 @@ Question: ${q}`,
     for (const term of T().TOOLS) if (T().present(term, text) && !T().present(term, cvText) && !new RegExp(`(?:learn|learning|ramp up)[^.]*\\b${term}\\b`, "i").test(text)) problems.push(`công cụ “${term}” không có trong CV`);
     for (let m of missing || []) { m = String(m).trim(); if (m.length > 2 && m.length <= 30 && T().present(m, text) && !T().present(m, cvText)) problems.push(`nhắc kỹ năng còn thiếu “${m}” như thể đã có`); }
     for (const rx of T().CLAIMS) { const mm = text.match(rx); if (mm && !rx.test(cvText)) problems.push(`khẳng định không có trong CV: “${mm[0]}”`); }
-    if (!/UTC\s?\+\s?7|ICT|Vietnam|Việt Nam/.test(text)) problems.push("chưa nêu Việt Nam / UTC+7");
+    if (!/UTC\s?\+\s?7|ICT|Vietnam|Việt Nam|Hanoi|Hà Nội/.test(text)) problems.push("chưa nêu Việt Nam / UTC+7");
     const n = bodyWords(paragraphs);
     if (n < 250 || n > 350) problems.push(`độ dài ${n} từ (cần 250–350)`);
     problems.push(...styleProblems(text));
@@ -1074,7 +1081,7 @@ Question: ${q}`,
     let [p2, p3] = build(picked);
     const english = (final.skills || []).flatMap((g) => g[1]).find((i) => /english/i.test(i));
     const langP = english ? `I work in English every day at C1 level (VSTEP), so I can deal directly with clients and colleagues.` : "";
-    const pTz = tzSentence(tz, avail) + " I keep written updates clear and complete so work keeps moving between calls.";
+    const pTz = tzSentence(tz, avail) + (tz && tz.method === "onsite" ? " I am ready to start once we agree on the details." : " I keep written updates clear and complete so work keeps moving between calls.");
     const close = `I would welcome a short call to talk about how I could help ${job.company}. Thank you for your time.`;
     const assemble = () => [p1, p2, p3, langP].filter(Boolean).concat([pTz, close]);
     let paras = assemble();
@@ -1364,7 +1371,7 @@ Question: ${q}`,
   const H = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const core = JT.core;
   const S = { gh: JT.LS.get("jt.gh", null), view: "pending", jobId: null, queue: null, history: null, cv: null, profile: null, edits: JT.LS.get("jt.edits", {}),
-    runs: null, busy: {}, confirm: null, cfgText: null, kwText: null, kw: null, kwDirty: false, gen: JT.LS.get("jt.gen", {}), watch: null, draft: {} };
+    runs: null, busy: {}, confirm: null, cfgText: null, kwText: null, kw: null, kwDirty: false, gen: JT.LS.get("jt.gen", {}), watch: null, draft: {}, track: JT.LS.get("jt.track", "remote") };
   const METHOD = { email: "Tự gửi email", greenhouse: "Tự nộp form Greenhouse", lever: "Tự nộp form Lever", ashby: "Tự nộp form Ashby", manual: "Bạn nộp tay" };
   const STATUS = { approved: "Đã duyệt", applied: "Đã nộp", interview: "Phỏng vấn", rejected: "Bị từ chối", offer: "Offer", skipped: "Bỏ qua" };
   const RES = { submitted: ["res-ok", "Đã nộp"], needs_manual: ["res-man", "Cần nộp tay"], failed: ["res-bad", "Lỗi"], skipped: ["", "Bỏ qua"], deferred: ["res-man", "Để ngày mai"] };
@@ -1477,6 +1484,7 @@ Question: ${q}`,
       <div><button class="btn primary" data-act="connect">Kết nối</button></div></section>`;
   }
   const ribbon = (tz) => {
+    if (tz && tz.method === "onsite") return "";
     const W = 480, x = (m) => (m / 1440) * W;
     let wins = "";
     const m = String((tz && (tz.hours_ict || tz.label)) || "").match(/(\d{2}):(\d{2})–(\d{2}):(\d{2})/);
@@ -1494,32 +1502,47 @@ Question: ${q}`,
     if (!a.configured) return `<div class="note small">Chưa có AI (chưa đặt secret GEMINI_API_KEY): tool chạy chế độ cơ bản.</div>`;
     return "";
   }
+  const onsiteOn = () => !!(S.queue && S.queue.onsite && S.queue.onsite.enabled);
+  const city = () => (S.queue && S.queue.onsite && S.queue.onsite.city) || "Hà Nội";
+  const trackOf = (j) => (onsiteOn() && j.track === "onsite" ? "onsite" : "remote");
+  const curTrack = () => (onsiteOn() ? S.track : "remote");
+  const commuteChip = (j) => (trackOf(j) === "onsite" ? `<span class="commute${j.commute && j.commute.km != null && j.commute.km <= 11 ? " near" : ""}">${H(j.commute ? j.commute.label : "Chưa rõ địa chỉ văn phòng")}</span>` : "");
+  function trackSwitch(all, allPicks) {
+    if (!onsiteOn()) return "";
+    const n = (t) => all.filter((j) => trackOf(j) === t).length + allPicks.filter((j) => trackOf(j) === t).length;
+    const b = (t, label) => `<button class="seg-b" role="tab" aria-selected="${curTrack() === t}" data-act="track" data-t="${t}">${label} <span class="seg-n">${n(t)}</span></button>`;
+    return `<div class="seg" role="tablist" aria-label="Loại job">${b("remote", "Remote")}${b("onsite", `Onsite ${H(city())}`)}</div>`;
+  }
   function viewPending() {
-    const jobs = S.queue.jobs, ps = picks();
+    const t = curTrack();
+    const jobs = S.queue.jobs.filter((j) => trackOf(j) === t), ps = picks().filter((j) => trackOf(j) === t);
+    const sw = trackSwitch(S.queue.jobs, picks());
     const runs = runsHtml() || `<div id="runs"></div>`;
     const scan = `<button class="btn" data-act="dispatch" data-wf="daily.yml" ${S.busy.dispatch ? "disabled" : ""}>Quét ngay</button>`;
-    if (!jobs.length && !ps.length) return `<div class="stack">${aiNote()}${addPanel()}<div class="empty"><b>Không có job nào chờ duyệt</b><span>GitHub tự quét mỗi sáng lúc khoảng 06:40 và gửi email khi có job phù hợp.</span>
+    if (!jobs.length && !ps.length) return `<div class="stack">${sw}${aiNote()}${addPanel()}<div class="empty"><b>Không có job ${t === "onsite" ? `onsite ở ${H(city())}` : onsiteOn() ? "remote" : "nào"} chờ duyệt</b><span>${t === "onsite"
+      ? `Job onsite đến từ email thông báo việc làm (TopCV, VietnamWorks, ITviec, LinkedIn… đặt địa điểm ${H(city())}), Jooble, hoặc bạn thêm / nhập file JSON ở trên.`
+      : "GitHub tự quét mỗi sáng lúc khoảng 06:40 và gửi email khi có job phù hợp."}</span>
       ${scan}</div>${runs}</div>`;
     const review = jobs.length ? `<div class="steph"><h2>Bước 2 · Hồ sơ chờ duyệt (${jobs.length})</h2><span class="muted small">Kiểm tra CV, cover letter, câu trả lời form rồi bấm Duyệt &amp; nộp.</span></div>
       <div class="jobs">${jobs.map((j) => {
         const sc = j.score;
         return `<button class="job" data-act="open" data-id="${H(j.id)}"><div class="score ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc ?? "–"}</div>
           <div class="job-main"><div class="job-title">${H(j.title)} <span class="muted" style="font-weight:400">· ${H(j.company)}</span></div>
-          <div class="job-meta">${pill(j.tz && j.tz.verdict)}<span class="mono small">${H(j.tz ? j.tz.label : "")}</span><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span>
+          <div class="job-meta">${trackOf(j) === "onsite" ? commuteChip(j) : `${pill(j.tz && j.tz.verdict)}<span class="mono small">${H(j.tz ? j.tz.label : "")}</span>`}<span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span>
           ${S.edits[j.id] ? `<span class="pill st">Có chỉnh sửa chưa gửi</span>` : ""}</div>${ribbon(j.tz)}</div></button>`;
       }).join("")}</div>` : "";
     const pick = ps.length ? `<div class="steph"><h2>Bước 1 · Chọn job để tạo hồ sơ (${ps.length})</h2><span class="muted small">Job đã qua bộ lọc. Bấm Tạo hồ sơ với job bạn muốn nộp: GitHub viết CV, cover letter và chuẩn bị form trong vài phút, rồi job chuyển sang bước 2.</span></div>
       <div class="jobs">${ps.map(pickCard).join("")}</div>` : "";
     return `<div class="stack"><div class="row" style="justify-content:space-between"><h2>Chờ duyệt</h2><div class="row"><button class="btn ghost" data-act="reload">Làm mới</button>${scan}</div></div>
-      ${aiNote()}${addPanel()}${review}${pick}${runs}</div>`;
+      ${sw}${aiNote()}${addPanel()}${review}${pick}${runs}</div>`;
   }
   const SITE = { linkedin: "LinkedIn", indeed: "Indeed", glassdoor: "Glassdoor", topcv: "TopCV", vietnamworks: "VietnamWorks", itviec: "ITviec",
     upwork: "Upwork", careerviet: "CareerViet", jobstreet: "JobStreet", wellfound: "Wellfound" };
   const originBadge = (j) => (j.origin === "manual" ? `<span class="origin">Bạn thêm</span>`
     : j.origin && j.origin.startsWith("email:") ? `<span class="origin">Email ${H(SITE[j.origin.slice(6)] || j.origin.slice(6))}</span>`
     : j.origin && j.origin.startsWith("import:") ? `<span class="origin">Nhập từ ${H(j.origin.slice(7))}</span>` : "");
-  const importPrompt = (site, kw) => `Mở ${site} trong trình duyệt và tìm job Remote cho chức danh "${kw || "…"}", đăng trong 14 ngày gần đây. Chọn tối đa 30 job phù hợp nhất. Với mỗi job, mở tin và lấy: chức danh, công ty, link tin gốc (ưu tiên link nộp đơn trên trang tuyển dụng của công ty), địa điểm/khu vực được tuyển, remote/hybrid/onsite, lương (nếu có), ngày đăng, và toàn bộ mô tả công việc. Chỉ ghi thông tin có trên trang, không tự thêm. Trả về đúng một file JSON theo mẫu:
-{"site": "${site}", "jobs": [{"title": "", "company": "", "url": "https://...", "location": "", "remote": "remote", "salary": "", "posted_at": "YYYY-MM-DD", "description": ""}]}`;
+  const importPrompt = (site, kw, onsite) => `Mở ${site} trong trình duyệt và tìm ${onsite ? `job làm tại văn phòng (onsite hoặc hybrid) ở ${city()}` : "job Remote"} cho chức danh "${kw || "…"}", đăng trong 14 ngày gần đây.${onsite ? ` Ưu tiên văn phòng gần ${(S.queue.onsite && S.queue.onsite.home) || "nhà"}. Ghi rõ địa chỉ văn phòng (quận, đường) vào location.` : ""} Chọn tối đa 30 job phù hợp nhất. Với mỗi job, mở tin và lấy: chức danh, công ty, link tin gốc (ưu tiên link nộp đơn trên trang tuyển dụng của công ty), địa điểm/khu vực được tuyển, remote/hybrid/onsite, lương (nếu có), ngày đăng, và toàn bộ mô tả công việc. Chỉ ghi thông tin có trên trang, không tự thêm. Trả về đúng một file JSON theo mẫu:
+{"site": "${site}", "jobs": [{"title": "", "company": "", "url": "https://...", "location": "", "remote": "${onsite ? "onsite" : "remote"}", "salary": "", "posted_at": "YYYY-MM-DD", "description": ""}]}`;
   function addPanel() {
     const kwd = S.addKw ?? ((S.profile.roles || [])[0] || "");
     const links = kwd ? core.searchLinks(kwd).filter((l) => /LinkedIn|TopCV|VietnamWorks|ITviec|Upwork|Indeed|Glassdoor/.test(l.site)) : [];
@@ -1534,7 +1557,7 @@ Question: ${q}`,
         ${added.length ? `<div class="stack" style="gap:4px"><b class="small">Job bạn thêm gần đây</b>${added.map((r) => `<div class="small"><b class="${r.status === "failed" ? "res-bad" : "res-ok"}">${r.status === "failed" ? "Lỗi" : "Đã thêm"}</b> · ${H(r.title)}${r.company ? ` · ${H(r.company)}` : ""} · <span class="muted">${H(r.reason)}</span></div>`).join("")}</div>` : ""}
         <div class="stack" style="gap:6px"><b class="small">Nhập nhiều job từ file JSON (Claude quét giúp)</b>
           <p class="muted small" style="margin:0">Mở trang tìm việc (VD hiring.cafe) bằng Claude trong app, dán câu lệnh dưới đây để Claude quét và trả về file JSON. Sau đó chọn file hoặc dán nội dung vào ô bên dưới rồi bấm Nhập: GitHub lọc múi giờ, chấm điểm và đưa job vào Bước 1.</p>
-          <div class="row"><input type="text" id="add-site" value="${H(S.draft["add-site"] || "hiring.cafe")}" placeholder="Trang tìm việc" style="flex:1;min-width:160px"><button class="btn ghost" data-act="copy-prompt">Chép câu lệnh cho Claude</button></div>
+          <div class="row"><input type="text" id="add-site" value="${H(S.draft["add-site"] || (curTrack() === "onsite" ? "topcv.vn" : "hiring.cafe"))}" placeholder="Trang tìm việc" style="flex:1;min-width:160px"><button class="btn ghost" data-act="copy-prompt">Chép câu lệnh cho Claude</button></div>
           <label class="f">File JSON<input type="file" id="add-file" accept=".json,application/json,text/plain"></label>
           <textarea id="add-json" placeholder='{"site": "hiring.cafe", "jobs": [{"title": "…", "company": "…", "url": "https://…", "description": "…"}]}' style="min-height:100px;font-family:ui-monospace,monospace;font-size:12px">${H(S.draft["add-json"] || "")}</textarea>
           <div class="row"><button class="btn primary" data-act="import-jobs" ${S.busy.imp ? "disabled" : ""}>Nhập job</button></div></div>
@@ -1548,7 +1571,7 @@ Question: ${q}`,
     const sc = j.score, gen = isGen(j), busy = S.busy["gen" + j.id];
     return `<div class="job pickc"><div class="score ${sc >= 70 ? "hi" : sc >= 50 ? "mid" : ""}">${sc ?? "–"}</div>
       <div class="job-main"><button class="linkish job-title" data-act="open-pick" data-id="${H(j.id)}">${H(j.title)} <span class="muted" style="font-weight:400">· ${H(j.company)}</span></button>
-      <div class="job-meta">${originBadge(j)}${pill(j.tz && j.tz.verdict)}<span class="mono small">${H(j.tz ? j.tz.label : "")}</span><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span>
+      <div class="job-meta">${originBadge(j)}${trackOf(j) === "onsite" ? commuteChip(j) : `${pill(j.tz && j.tz.verdict)}<span class="mono small">${H(j.tz ? j.tz.label : "")}</span>`}<span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span>
         ${j.snippet_only ? `<span class="pill st">Chưa có JD đầy đủ</span>` : ""}</div>
       ${ribbon(j.tz)}${j.note && !gen ? `<div class="warn-line">${H(j.note)}</div>` : ""}
       <div class="row" style="gap:8px">${gen ? `<span class="busy small"><span class="spin"></span>Đang tạo hồ sơ, khoảng 1–5 phút…</span>`
@@ -1574,7 +1597,8 @@ Question: ${q}`,
       <div><button class="btn ghost" data-act="back">← Danh sách</button></div>
       <section class="panel stack"><div class="dhead"><div class="score ${j.score >= 70 ? "hi" : ""}">${j.score ?? "–"}</div><div class="t"><h2>${H(j.title)}</h2>
         <div class="muted">${H(j.company)} · <a href="${H(j.url)}" target="_blank" rel="noopener">Tin gốc ↗</a>${j.salary ? ` · ${H(j.salary)} ${H(j.currency || "")}` : ""}</div></div><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method] || j.apply.method)}</span></div>
-        ${ribbon(tz)}<div class="row">${pill(tz.verdict)}<b class="mono small">${H(tz.label)}</b></div><div class="small">${H(tz.reason)}</div>
+        ${trackOf(j) === "onsite" ? `<div class="row">${commuteChip(j)}<b class="small">Làm tại văn phòng ${H(city())}</b></div>`
+          : `${ribbon(tz)}<div class="row">${pill(tz.verdict)}<b class="mono small">${H(tz.label)}</b></div><div class="small">${H(tz.reason)}</div>`}
         ${(j.location || []).length ? `<div class="small"><b>Nơi tuyển:</b> ${H(j.location.join(", "))}</div>` : ""}
         <p class="small" style="margin:0"><b>Độ phù hợp:</b> ${H(sc.reasoning)}</p>
         ${list("Khớp với CV", sc.matched)}${list("Chuyển đổi được", sc.transferable)}${list("JD yêu cầu nhưng CV chưa có", sc.missing)}
@@ -1624,7 +1648,8 @@ Question: ${q}`,
       <div><button class="btn ghost" data-act="back">← Danh sách</button></div>
       <section class="panel stack"><div class="dhead"><div class="score ${j.score >= 70 ? "hi" : ""}">${j.score ?? "–"}</div><div class="t"><h2>${H(j.title)}</h2>
         <div class="muted">${H(j.company)} · <a href="${H(j.url)}" target="_blank" rel="noopener">Tin gốc ↗</a></div></div><span class="method ${j.apply.method === "manual" ? "manual" : ""}">${H(METHOD[j.apply.method])}</span></div>
-        ${ribbon(tz)}<div class="row">${pill(tz.verdict)}<b class="mono small">${H(tz.label)}</b></div><div class="small">${H(tz.reason)}</div>
+        ${trackOf(j) === "onsite" ? `<div class="row">${commuteChip(j)}<b class="small">Làm tại văn phòng ${H(city())}</b></div>`
+          : `${ribbon(tz)}<div class="row">${pill(tz.verdict)}<b class="mono small">${H(tz.label)}</b></div><div class="small">${H(tz.reason)}</div>`}
         ${(tz.questions || []).length ? `<details><summary class="small">Câu nên hỏi nhà tuyển dụng về giờ làm</summary><ul class="plain small">${tz.questions.map((q) => `<li>${H(q)}</li>`).join("")}</ul></details>` : ""}
         <p class="small" style="margin:0"><b>Độ phù hợp:</b> ${H(sc.reasoning)}</p>
         ${(sc.red_flags || []).length ? `<div class="note warn small">${sc.red_flags.map(H).join(" · ")}</div>` : ""}
@@ -1855,8 +1880,9 @@ Question: ${q}`,
     else if (a === "watch") { watchRuns(); }
     else if (a === "add-job") { await addJob(); }
     else if (a === "import-jobs") { await importJobs(); }
+    else if (a === "track") { S.track = t.dataset.t; JT.LS.set("jt.track", S.track); delete S.draft["add-site"]; render(); }
     else if (a === "copy-prompt") {
-      const txt = importPrompt($("#add-site").value.trim() || "hiring.cafe", S.addKw ?? ((S.profile.roles || [])[0] || ""));
+      const txt = importPrompt($("#add-site").value.trim() || "hiring.cafe", S.addKw ?? ((S.profile.roles || [])[0] || ""), curTrack() === "onsite");
       try { await navigator.clipboard.writeText(txt); toast("Đã chép. Dán vào Claude cùng với trang tìm việc."); }
       catch (e) { const el = $("#add-json"); el.value = txt; el.select(); toast("Không chép tự động được: câu lệnh đang ở ô bên dưới, hãy tự chép rồi xoá đi", 6000); }
     }
