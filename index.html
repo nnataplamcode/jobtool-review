@@ -1516,7 +1516,10 @@ Question: ${q}`,
   const SITE = { linkedin: "LinkedIn", indeed: "Indeed", glassdoor: "Glassdoor", topcv: "TopCV", vietnamworks: "VietnamWorks", itviec: "ITviec",
     upwork: "Upwork", careerviet: "CareerViet", jobstreet: "JobStreet", wellfound: "Wellfound" };
   const originBadge = (j) => (j.origin === "manual" ? `<span class="origin">Bạn thêm</span>`
-    : j.origin && j.origin.startsWith("email:") ? `<span class="origin">Email ${H(SITE[j.origin.slice(6)] || j.origin.slice(6))}</span>` : "");
+    : j.origin && j.origin.startsWith("email:") ? `<span class="origin">Email ${H(SITE[j.origin.slice(6)] || j.origin.slice(6))}</span>`
+    : j.origin && j.origin.startsWith("import:") ? `<span class="origin">Nhập từ ${H(j.origin.slice(7))}</span>` : "");
+  const importPrompt = (site, kw) => `Mở ${site} trong trình duyệt và tìm job Remote cho chức danh "${kw || "…"}", đăng trong 14 ngày gần đây. Chọn tối đa 30 job phù hợp nhất. Với mỗi job, mở tin và lấy: chức danh, công ty, link tin gốc (ưu tiên link nộp đơn trên trang tuyển dụng của công ty), địa điểm/khu vực được tuyển, remote/hybrid/onsite, lương (nếu có), ngày đăng, và toàn bộ mô tả công việc. Chỉ ghi thông tin có trên trang, không tự thêm. Trả về đúng một file JSON theo mẫu:
+{"site": "${site}", "jobs": [{"title": "", "company": "", "url": "https://...", "location": "", "remote": "remote", "salary": "", "posted_at": "YYYY-MM-DD", "description": ""}]}`;
   function addPanel() {
     const kwd = S.addKw ?? ((S.profile.roles || [])[0] || "");
     const links = kwd ? core.searchLinks(kwd).filter((l) => /LinkedIn|TopCV|VietnamWorks|ITviec|Upwork|Indeed|Glassdoor/.test(l.site)) : [];
@@ -1529,6 +1532,12 @@ Question: ${q}`,
         <label class="f">Nội dung JD (khuyên dán)<textarea id="add-text" placeholder="Chép toàn bộ mô tả công việc trên trang tuyển dụng và dán vào đây" style="min-height:140px">${H(S.draft["add-text"] || "")}</textarea></label>
         <div class="row"><button class="btn primary" data-act="add-job" ${S.busy.add ? "disabled" : ""}>Thêm job</button></div>
         ${added.length ? `<div class="stack" style="gap:4px"><b class="small">Job bạn thêm gần đây</b>${added.map((r) => `<div class="small"><b class="${r.status === "failed" ? "res-bad" : "res-ok"}">${r.status === "failed" ? "Lỗi" : "Đã thêm"}</b> · ${H(r.title)}${r.company ? ` · ${H(r.company)}` : ""} · <span class="muted">${H(r.reason)}</span></div>`).join("")}</div>` : ""}
+        <div class="stack" style="gap:6px"><b class="small">Nhập nhiều job từ file JSON (Claude quét giúp)</b>
+          <p class="muted small" style="margin:0">Mở trang tìm việc (VD hiring.cafe) bằng Claude trong app, dán câu lệnh dưới đây để Claude quét và trả về file JSON. Sau đó chọn file hoặc dán nội dung vào ô bên dưới rồi bấm Nhập: GitHub lọc múi giờ, chấm điểm và đưa job vào Bước 1.</p>
+          <div class="row"><input type="text" id="add-site" value="${H(S.draft["add-site"] || "hiring.cafe")}" placeholder="Trang tìm việc" style="flex:1;min-width:160px"><button class="btn ghost" data-act="copy-prompt">Chép câu lệnh cho Claude</button></div>
+          <label class="f">File JSON<input type="file" id="add-file" accept=".json,application/json,text/plain"></label>
+          <textarea id="add-json" placeholder='{"site": "hiring.cafe", "jobs": [{"title": "…", "company": "…", "url": "https://…", "description": "…"}]}' style="min-height:100px;font-family:ui-monospace,monospace;font-size:12px">${H(S.draft["add-json"] || "")}</textarea>
+          <div class="row"><button class="btn primary" data-act="import-jobs" ${S.busy.imp ? "disabled" : ""}>Nhập job</button></div></div>
         <div class="stack" style="gap:6px"><b class="small">Tìm job trên các trang (mở trong tab mới)</b>
           <div class="row"><input type="text" id="add-kw" value="${H(kwd)}" placeholder="Chức danh muốn tìm" style="flex:1;min-width:180px"><button class="btn ghost" data-act="add-kw">Đổi từ khoá</button></div>
           <div class="sites">${links.map((l) => `<a class="site" href="${H(l.url)}" target="_blank" rel="noopener"><b>${H(l.site)}</b><span class="muted small">${H(l.note)}</span></a>`).join("")}</div>
@@ -1788,6 +1797,32 @@ Question: ${q}`,
     } catch (e) { toast(e.message, 6000); }
     S.busy.add = false; render();
   }
+  function parseImport(text) {
+    let data;
+    try { data = JSON.parse(text.trim().replace(/^```(?:json)?\s*|\s*```$/g, "")); } catch (e) { throw new Error("Nội dung không phải JSON hợp lệ: " + e.message); }
+    const site = Array.isArray(data) ? ($("#add-site").value.trim() || "json") : String(data.site || data.source || $("#add-site").value.trim() || "json");
+    const jobs = Array.isArray(data) ? data : data && data.jobs;
+    if (!Array.isArray(jobs) || !jobs.length) throw new Error('Không thấy danh sách job: cần [...] hoặc {"site": "...", "jobs": [...]}');
+    if (jobs.length > 200) throw new Error(`Có ${jobs.length} job, tối đa 200 job mỗi lần nhập`);
+    const ok = jobs.filter((x) => x && (x.title || x.job_title) && /^https?:\/\//i.test(x.url || x.link || x.job_url || x.apply_url || ""));
+    if (!ok.length) throw new Error("Không job nào có đủ chức danh (title) và link (url)");
+    return { site, jobs, ok: ok.length };
+  }
+  async function importJobs() {
+    let p;
+    try { p = parseImport($("#add-json").value); } catch (e) { return toast(e.message, 6000); }
+    S.busy.imp = true; S.addOpen = true; render();
+    try {
+      const ts = Date.now();
+      const d = { action: "import", site: p.site, jobs: p.jobs, decided_at: new Date(ts).toISOString() };
+      await gh.put(`state/decisions/import-${ts}.json`, JSON.stringify(d, null, 1), `Nhập ${p.jobs.length} job từ ${p.site}`);
+      toast(`Đã gửi ${p.ok} job${p.ok < p.jobs.length ? ` (${p.jobs.length - p.ok} dòng thiếu chức danh/link sẽ bị bỏ)` : ""}. GitHub đang lọc và chấm điểm (1–3 phút).`, 6000);
+      delete S.draft["add-json"]; const el = $("#add-json"); if (el) el.value = "";
+      S.busy.imp = false; render(); watchRuns();
+      return;
+    } catch (e) { toast(e.message, 6000); }
+    S.busy.imp = false; render();
+  }
   async function decide(j, action) {
     S.busy.decide = true; render();
     try {
@@ -1819,6 +1854,12 @@ Question: ${q}`,
     else if (a === "skip-pick" && p) { await decide(p, "skip"); }
     else if (a === "watch") { watchRuns(); }
     else if (a === "add-job") { await addJob(); }
+    else if (a === "import-jobs") { await importJobs(); }
+    else if (a === "copy-prompt") {
+      const txt = importPrompt($("#add-site").value.trim() || "hiring.cafe", S.addKw ?? ((S.profile.roles || [])[0] || ""));
+      try { await navigator.clipboard.writeText(txt); toast("Đã chép. Dán vào Claude cùng với trang tìm việc."); }
+      catch (e) { const el = $("#add-json"); el.value = txt; el.select(); toast("Không chép tự động được: câu lệnh đang ở ô bên dưới, hãy tự chép rồi xoá đi", 6000); }
+    }
     else if (a === "add-kw") { S.addKw = $("#add-kw").value.trim(); S.addOpen = true; render(); }
     else if (a === "back") { S.view = "pending"; render(); }
     else if (a === "cv-edit") { S.busy.cvEdit = S.busy.cvEdit === j.id ? null : j.id; render(); }
@@ -1921,8 +1962,14 @@ Question: ${q}`,
       span.textContent = n ? `Còn ${n} câu bắt buộc chưa trả lời: tool sẽ dừng ở bước nộp và báo bạn.` : `Duyệt xong, GitHub ${j.apply.method === "manual" ? "lưu hồ sơ và gửi bạn link" : "tự nộp trong 1–3 phút"}.`;
     }
   }
-  document.addEventListener("change", (ev) => {
+  document.addEventListener("change", async (ev) => {
     const t = ev.target;
+    if (t.id === "add-file" && t.files && t.files[0]) {
+      const text = await t.files[0].text();
+      S.draft["add-json"] = text; const el = $("#add-json"); if (el) el.value = text;
+      try { const p = parseImport(text); toast(`File có ${p.jobs.length} job từ ${p.site}. Bấm Nhập job để gửi.`, 5000); } catch (e) { toast(e.message, 6000); }
+      return;
+    }
     if (!(t.dataset.fv || t.dataset.edit)) return;
     t.dispatchEvent(new Event("input", { bubbles: true }));
     if (t.dataset.fv) refreshNeeds();
